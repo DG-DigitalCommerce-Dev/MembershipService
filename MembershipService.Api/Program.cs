@@ -1,6 +1,7 @@
 
 using MembershipService.Application.Common.Interfaces;
 using MembershipService.Application.Services;
+using MembershipService.Infrastructure.Integrations;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,7 +12,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-//builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IMembershipInfoService, MembershipInfoService>();
+builder.Services.AddScoped<VtexMembershipClient>();
+
 //builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 

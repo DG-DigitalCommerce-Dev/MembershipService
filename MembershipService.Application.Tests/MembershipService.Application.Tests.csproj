@@ -7,20 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Castle.Core" Version="5.1.1" />
     <PackageReference Include="FluentAssertions" Version="8.8.0" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+    <PackageReference Include="Moq" Version="4.20.69" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\MembershipService.Application\MembershipService.Application.csproj" />
-		<ProjectReference Include="..\MembershiService.Application\MembershipService.Application.csproj" />
-		<ProjectReference Include="..\MembershipService.Api\MembershipService.Api.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MembershipService.Application\MembershipService.Application.csproj" />
+  </ItemGroup>
 
 </Project>
 

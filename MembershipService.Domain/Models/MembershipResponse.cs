@@ -8,7 +8,7 @@ namespace MembershipService.Domain.Models
 {
     public class MembershipResponse
     {
-        public List<MembershipInfo> MembershipInfos { get; set; } = new();
+        public List<MembershipInfo>? MembershipInfos { get; set; } = null;
         public string? Error { get; set; }
     }
 }

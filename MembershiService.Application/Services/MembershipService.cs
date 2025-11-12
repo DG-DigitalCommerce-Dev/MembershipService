@@ -1,7 +1,7 @@
 ﻿using MembershipService.Application.Common.Interfaces;
 using MembershipService.Domain.Models;
 using MembershipService.Infrastructure.Integrations;
-using MembershipService.Infrastructure.Integrations.Interfaces;
+using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,9 @@ namespace MembershipService.Application.Services
 {
     public class MembershipInfoService : IMembershipInfoService
     {
-        private ILogger<MembershipInfoService> _logger;
-        private VtexMembershipClient _client;
-        public MembershipInfoService(ILogger<MembershipInfoService> logger, VtexMembershipClient client)
+        private readonly ILogger<MembershipInfoService> _logger;
+        private readonly IVtexMembershipClient _client;
+        public MembershipInfoService(ILogger<MembershipInfoService> logger, IVtexMembershipClient client)
         {
             _logger = logger;
             _client = client;
@@ -27,34 +27,27 @@ namespace MembershipService.Application.Services
             string status
         )
         {
-            try
+
+            _logger.LogInformation("Attempting to get Membership information from VTEX endpoint");
+            var result = await _client.GetActiveMembershipInfo(
+                                            xVtexAPIAppToken,
+                                            xVtexAPIAppKey,
+                                            status
+                                       );
+            
+            if (result.Error != null) return result;
+
+            _logger.LogInformation($"Membership Information Received from VTEX endpoint");
+            
+            if (result.MembershipInfos == null || result.MembershipInfos.Count == 0)
             {
-                var result = await _client.GetActiveMembershipInfo(
-                                                xVtexAPIAppToken,
-                                                xVtexAPIAppKey,
-                                                status
-                                           );
-
-                if (result == null || result.MembershipInfos.Count == 0)
-                {
-                    return new MembershipResponse
-                    {
-                        Error = "NOT_FOUND"
-                    };
-                }
-
+                _logger.LogWarning("List of Membership Information from VTEX endpoint is an empty list or null");
+                result.Error = "NOT_FOUND";
                 return result;
             }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "VTEX API call failed.");
-                return new MembershipResponse { Error = "SERVICE_UNAVAILABLE" };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error occurred in SubscriptionService.");
-                return new MembershipResponse { Error = "INTERNAL_ERROR" };
-            }
+
+            return result;
+
         }
     }
 }

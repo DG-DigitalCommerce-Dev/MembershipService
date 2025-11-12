@@ -2,6 +2,7 @@
 using MembershipService.Application.Common.Interfaces;
 using MembershipService.Application.Services;
 using MembershipService.Infrastructure.Integrations;
+using MembershipService.Infrastructure.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,7 +15,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IMembershipInfoService, MembershipInfoService>();
-builder.Services.AddScoped<VtexMembershipClient>();
+builder.Services.AddScoped<IVtexMembershipClient, VtexMembershipClient>();
 
 //builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();

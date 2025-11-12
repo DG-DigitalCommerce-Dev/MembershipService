@@ -1,22 +1,27 @@
 ﻿using MembershipService.Domain.Models;
+using MembershipService.Infrastructure.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace MembershipService.Infrastructure.Integrations
 {
-    public class VtexMembershipClient
+    public class VtexMembershipClient : IVtexMembershipClient
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<VtexMembershipClient> _logger;
         private static readonly Random rand = new Random();
 
-        public VtexMembershipClient(HttpClient httpClient)
+        public VtexMembershipClient(HttpClient httpClient, ILogger<VtexMembershipClient> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
+        // Function to get membership information of users who have an active subscription
         public async Task<MembershipResponse> GetActiveMembershipInfo(
             string xVtexAPIAppToken,
             string xVtexAPIAppKey,
@@ -37,20 +42,27 @@ namespace MembershipService.Infrastructure.Integrations
 
                 try
                 {
+                    _logger.LogInformation("Calling VTEX endpoint for Membership Information");
                     var response = await _httpClient.SendAsync(request);
                     response.EnsureSuccessStatusCode();
 
                     result.MembershipInfos = await response.Content.ReadFromJsonAsync<List<MembershipInfo>>();
 
-                    return result; // Success! Exit the method.
+                    return result; 
                 }
                 catch (HttpRequestException ex)
                 {
 
-                    // If VTEX does not connect after 3 tries - Stop
-                    if (attemptCount == maxAttempts) throw;
 
-                    // --- This is the exponential backoff logic ---
+                    // If VTEX does not connect after 3 tries - Stop
+                    if (attemptCount == maxAttempts)
+                    {
+                        _logger.LogError(ex,$"Unable get response from VTEX Endpoint, Message = {ex.Message}, Stack Trace = {ex.StackTrace}");
+                        result.Error = "SERVICE_UNAVAILABLE";
+                        return result;
+                    }
+
+                    // Exponential backoff logic
                     int jitterMs = rand.Next(0, (int)(baseDelay.TotalMilliseconds / 2));
                     double backoffMs = Math.Pow(2, attemptCount - 1) * baseDelay.TotalMilliseconds;
                     TimeSpan delay = TimeSpan.FromMilliseconds(backoffMs + jitterMs);
@@ -59,7 +71,9 @@ namespace MembershipService.Infrastructure.Integrations
                 }
                 catch (Exception ex)
                 {
-                    throw; // Unexpected Error
+                    _logger.LogError(ex, $"Unexpected Error when attempting to get membership information from VTEX endpoint, Message = {ex.Message}, Stack Trace = {ex.StackTrace}");
+                    result.Error = "INTERNAL_ERROR";
+                    return result;
                 }
 
                 attemptCount++;

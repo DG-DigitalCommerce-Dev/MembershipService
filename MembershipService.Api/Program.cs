@@ -2,6 +2,8 @@ using MembershipService.Application.Services;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 

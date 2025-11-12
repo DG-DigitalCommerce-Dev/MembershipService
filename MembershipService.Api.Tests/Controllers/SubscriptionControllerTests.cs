@@ -1,48 +1,76 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using Moq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MembershipService.Api.Controllers;
 using MembershipService.Application.Services;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
 
 namespace MembershipService.Api.Tests.Controllers
 {
+    [TestFixture]
     public class SubscriptionControllerTests
     {
-        private readonly Mock<SubscriptionService> _mockService;
-        private readonly SubscriptionController _controller;
+        private Mock<ISubscriptionService> _mockService;
+        private SubscriptionController _controller;
 
-        public SubscriptionControllerTests()
+        [SetUp]
+        public void Setup()
         {
-            // Mock the SubscriptionService dependency
-            _mockService = new Mock<SubscriptionService>(null, null, null);
+            // Initialize the Mock Service
+            _mockService = new Mock<ISubscriptionService>();
             _controller = new SubscriptionController(_mockService.Object);
         }
 
-        [Fact]
-        public async Task GetSubscriptions_ReturnsOk_WhenDataExists()
+        // Helper method to create a realistic response object from the Service
+        private List<object> GetMockServiceResponse()
+        {
+            var mockProduct = new
+            {
+                RefId = "dg-plus-sub-monthly",
+                ProductDetails = new { ShowWithoutStock = true },
+                PriceDetails = new { basePrice = 99.99 }
+            };
+            return new List<object> { mockProduct };
+        }
+
+        //=SUCCESS SCENARIO
+        [Test]
+        public async Task GetSubscriptions_Success_ReturnsOkWithTransformedData()
         {
             // Arrange
-            var fakeResponse = new List<object>
-            {
-                new { RefId = "dg-plus-sub-monthly", PriceDetails = new { basePrice = 120.0 } }
-            };
-
             _mockService.Setup(s => s.GetSubscriptionsWithPricingAsync(It.IsAny<List<string>>()))
-                        .ReturnsAsync(fakeResponse);
+                        .ReturnsAsync(GetMockServiceResponse());
 
             // Act
             var result = await _controller.GetSubscriptions();
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.NotNull(okResult.Value);
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            var okResult = result as OkObjectResult;
+            Assert.That(okResult.StatusCode, Is.EqualTo(200));
+
+           
+            var json = System.Text.Json.JsonSerializer.Serialize(okResult.Value);
+            var parsed = System.Text.Json.JsonDocument.Parse(json).RootElement;
+
+            Assert.That(parsed.TryGetProperty("subscriptions", out var subs), Is.True);
+            Assert.That(subs.GetArrayLength(), Is.EqualTo(1));
+
+            var subscription = subs[0];
+            Assert.That(subscription.GetProperty("planType").GetString(), Is.EqualTo("MONTHLY"));
+            Assert.That(subscription.GetProperty("frequency").GetString(), Is.EqualTo("1 month"));
+
+            var sku = subscription.GetProperty("skus")[0];
+            Assert.That(sku.GetProperty("price").GetDouble(), Is.EqualTo(99.99));
+            Assert.That(sku.GetProperty("status").GetString(), Is.EqualTo("ACTIVE"));
+            Assert.That(sku.GetProperty("stockAvailable").GetBoolean(), Is.True);
         }
 
-        [Fact]
-        public async Task GetSubscriptions_ReturnsNotFound_WhenNoData()
+        //NOT FOUND SCENARIO
+        [Test]
+        public async Task GetSubscriptions_ServiceReturnsEmpty_ReturnsNotFound404()
         {
             // Arrange
             _mockService.Setup(s => s.GetSubscriptionsWithPricingAsync(It.IsAny<List<string>>()))
@@ -52,25 +80,42 @@ namespace MembershipService.Api.Tests.Controllers
             var result = await _controller.GetSubscriptions();
 
             // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            var value = notFoundResult.Value as dynamic;
+            Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+            var notFoundResult = result as NotFoundObjectResult;
+            Assert.That(notFoundResult.StatusCode, Is.EqualTo(404));
 
-            Assert.Equal("NOT_FOUND", value.error.code);
+            // Deserialize
+            var json = System.Text.Json.JsonSerializer.Serialize(notFoundResult.Value);
+            var parsed = System.Text.Json.JsonDocument.Parse(json).RootElement;
+
+            Assert.That(parsed.GetProperty("error").GetProperty("code").GetString(), Is.EqualTo("NOT_FOUND"));
+            Assert.That(parsed.GetProperty("error").GetProperty("message").GetString(), Is.EqualTo("No subscriptions found."));
         }
 
-        [Fact]
-        public async Task GetSubscriptions_ReturnsInternalServerError_OnException()
+        // INTERNAL SERVER ERROR (500)
+        [Test]
+        public async Task GetSubscriptions_ServiceThrowsException_ReturnsInternalServerError500()
         {
             // Arrange
             _mockService.Setup(s => s.GetSubscriptionsWithPricingAsync(It.IsAny<List<string>>()))
-                        .ThrowsAsync(new Exception("VTEX API timeout"));
+                        .ThrowsAsync(new Exception("Database connection pool exhausted."));
 
             // Act
             var result = await _controller.GetSubscriptions();
 
             // Assert
-            var statusResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, statusResult.StatusCode);
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult.StatusCode, Is.EqualTo(500));
+
+            // Deserialize
+            var json = System.Text.Json.JsonSerializer.Serialize(objectResult.Value);
+            var parsed = System.Text.Json.JsonDocument.Parse(json).RootElement;
+
+            Assert.That(parsed.GetProperty("error").GetProperty("code").GetString(), Is.EqualTo("SERVICE_UNAVAILABLE"));
+            var message = parsed.GetProperty("error").GetProperty("message").GetString();
+            Assert.That(message, Does.Contain("Unable to retrieve subscriptions"));
+            Assert.That(message, Does.Contain("Database connection pool exhausted."));
         }
     }
 }

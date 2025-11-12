@@ -10,7 +10,8 @@ using System.Threading;
 
 namespace MembershipService.Application.Services
 {
-    public class SubscriptionService
+    //public class SubscriptionService
+    public class SubscriptionService : ISubscriptionService
     {
         private readonly HttpClient _httpClient;
         private readonly HttpClient _pricingClient;

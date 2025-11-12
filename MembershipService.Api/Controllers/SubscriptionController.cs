@@ -12,9 +12,14 @@ namespace MembershipService.Api.Controllers
     [Route("api/[controller]")]
     public class SubscriptionController : ControllerBase
     {
-        private readonly SubscriptionService _subscriptionService;
+        //private readonly SubscriptionService _subscriptionService;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public SubscriptionController(SubscriptionService subscriptionService)
+        //public SubscriptionController(SubscriptionService subscriptionService)
+        //{
+        //    _subscriptionService = subscriptionService;
+        //}
+        public SubscriptionController(ISubscriptionService subscriptionService)
         {
             _subscriptionService = subscriptionService;
         }

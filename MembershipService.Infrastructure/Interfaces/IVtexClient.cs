@@ -7,4 +7,3 @@ namespace MembershipService.Infrastructure.Integrations.Interfaces
         Task<SubscriptionResponse?> GetSubscriptionPlansAsync();
     }
 }
-

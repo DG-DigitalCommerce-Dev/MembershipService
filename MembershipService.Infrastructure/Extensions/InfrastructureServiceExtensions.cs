@@ -1,30 +1,31 @@
-﻿//using MembershipService.Infrastructure.Interfaces;
-//using MembershipService.Infrastructure.Integrations;
-//using MembershipService.Infrastructure.Models;
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.DependencyInjection;
-//using Polly;
-//using Polly.Extensions.Http;
+﻿using MembershipService.Infrastructure.Integrations;
+using MembershipService.Infrastructure.Integrations.Interfaces;
+using MembershipService.Infrastructure.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Extensions.Http;
 
-//namespace MembershipService.Infrastructure.Extensions
-//{
-//    public static class InfrastructureServiceExtensions
-//    {
-//        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
-//        {
-//            services.Configure<VtexSettings>(configuration.GetSection("VtexSettings"));
+namespace MembershipService.Infrastructure.Extensions
+{
+    public static class InfrastructureServiceExtensions
+    {
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<VtexSettings>(configuration.GetSection("VtexApi"));
 
-//            services.AddHttpClient<IVtexClient, VtexClient>()
-//                .AddPolicyHandler(GetRetryPolicy());
+            services.AddHttpClient<IVtexClient, VtexClient>()
+                .AddPolicyHandler(GetRetryPolicy());
 
-//            return services;
-//        }
+            return services;
+        }
 
-//        private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-//        {
-//            return HttpPolicyExtensions
-//                .HandleTransientHttpError()
-//                .WaitAndRetryAsync(2, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-//        }
-//    }
-//}
+        private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        {
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .WaitAndRetryAsync(2, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+        }
+    }
+}
+

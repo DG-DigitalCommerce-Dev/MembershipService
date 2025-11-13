@@ -1,16 +1,5 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-
-//namespace MembershipService.Application.Common.Interfaces
-//{
-//    internal interface ISubscriptionService
-//    {
-//    }
-//}
-using MembershipService.Domain.Models;
+﻿using MembershipService.Domain.Models;
+using System.Threading.Tasks;
 
 namespace MembershipService.Application.Common.Interfaces
 {
@@ -19,4 +8,3 @@ namespace MembershipService.Application.Common.Interfaces
         Task<SubscriptionResponse> GetSubscriptionPlansAsync();
     }
 }
-

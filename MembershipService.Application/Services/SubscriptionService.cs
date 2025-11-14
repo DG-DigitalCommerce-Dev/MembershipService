@@ -4,6 +4,7 @@ using MembershipService.Domain.Constants;
 using MembershipService.Infrastructure.Integrations.Interfaces;
 using Microsoft.Extensions.Logging;
 
+
 namespace MembershipService.Application.Services
 {
     public class SubscriptionService : ISubscriptionService
@@ -31,7 +32,7 @@ namespace MembershipService.Application.Services
                 return Enumerable.Empty<SubscriptionDto>();
             }
 
-            // Log DTO transformation step
+            
             _logger.LogInformation(LogMessages.TransformingToDto);
 
             var dtoList = domainResponse.Subscriptions.Select(plan =>

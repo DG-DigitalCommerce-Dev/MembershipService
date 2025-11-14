@@ -49,7 +49,7 @@ namespace MembershipService.Infrastructure.Integrations
                 string refId = entry.Key;
                 var map = entry.Value;
 
-                // NEW LOG ------------
+               
                 _logger.LogInformation(LogMessages.FetchProduct, refId);
 
                 var productRoot = await GetWithRetry(() => GetProductAsync(refId), 2);
@@ -74,7 +74,6 @@ namespace MembershipService.Infrastructure.Integrations
                         {
                             string skuId = idEl.GetString() ?? "";
 
-                            // NEW LOG ------------
                             _logger.LogInformation(LogMessages.FetchPrice, skuId);
 
                             await AddSku(plan.Skus, skuId, productRoot.Value);
@@ -88,7 +87,6 @@ namespace MembershipService.Infrastructure.Integrations
                 {
                     string productId = prodIdEl.GetInt32().ToString();
 
-                    // NEW LOG ------------
                     _logger.LogInformation(LogMessages.FetchPrice, productId);
 
                     await AddSku(plan.Skus, productId, productRoot.Value);

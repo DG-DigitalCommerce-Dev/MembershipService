@@ -1,19 +1,15 @@
-﻿using MembershipService.Domain.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MembershipService.Domain.Models;
 
 namespace MembershipService.Infrastructure.Interfaces
 {
-    public interface IVtexMembershipClient
+    public interface IVtexMembershipRepository
     {
-        Task<MembershipResponse> GetActiveMembershipInfo(
-            string xVtexAPIAppToken,
-            string xVtexAPIAppKey,
-            string status
-        );
+        Task<IEnumerable<MembershipInfo>> GetActiveMembershipInfo();
     }
 
 }

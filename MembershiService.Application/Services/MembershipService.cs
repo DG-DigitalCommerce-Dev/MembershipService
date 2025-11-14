@@ -1,8 +1,10 @@
 ﻿using MembershipService.Application.Common.Interfaces;
+using MembershipService.Domain.Constants;
 using MembershipService.Domain.Models;
 using MembershipService.Infrastructure.Integrations;
 using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
+using MembershipService.Application.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,40 +16,31 @@ namespace MembershipService.Application.Services
     public class MembershipInfoService : IMembershipInfoService
     {
         private readonly ILogger<MembershipInfoService> _logger;
-        private readonly IVtexMembershipClient _client;
-        public MembershipInfoService(ILogger<MembershipInfoService> logger, IVtexMembershipClient client)
+        private readonly IVtexMembershipRepository _vtexMembershipRepository;
+        public MembershipInfoService(ILogger<MembershipInfoService> logger, IVtexMembershipRepository vtexMembershipRepository)
         {
             _logger = logger;
-            _client = client;
+            _vtexMembershipRepository = vtexMembershipRepository;
         }
 
-        public async Task<MembershipResponse> GetActiveMembershipInfo(
-            string xVtexAPIAppToken,
-            string xVtexAPIAppKey,
-            string status
-        )
+        public async Task<IEnumerable<MembershipDto>> GetActiveMembershipInfo()
         {
+            _logger.LogInformation(LogMessageConstants.requestingMembershipData);
+            var result = await _vtexMembershipRepository.GetActiveMembershipInfo();
 
-            _logger.LogInformation("Attempting to get Membership information from VTEX endpoint");
-            var result = await _client.GetActiveMembershipInfo(
-                                            xVtexAPIAppToken,
-                                            xVtexAPIAppKey,
-                                            status
-                                       );
-            
-            if (result.Error != null) return result;
-
-            _logger.LogInformation($"Membership Information Received from VTEX endpoint");
-            
-            if (result.MembershipInfos == null || result.MembershipInfos.Count == 0)
+            if (result == null)
             {
-                _logger.LogWarning("List of Membership Information from VTEX endpoint is an empty list or null");
-                result.Error = "NOT_FOUND";
-                return result;
+                return Enumerable.Empty<MembershipDto>();
             }
 
-            return result;
-
+            _logger.LogInformation(LogMessageConstants.membershipInfoReceived);
+            var resultDto = new List<MembershipDto>();
+            
+            foreach (var membershipInfo in result) 
+            {
+                resultDto.Add(new MembershipDto(membershipInfo));
+            }
+            return resultDto;
         }
     }
 }

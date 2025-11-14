@@ -1,251 +1,85 @@
-﻿// --- Required Usings ---
-using Xunit;
-using Moq;
+﻿using MembershipService.Application.Common.Interfaces;
+using MembershipService.Application.DTOs; 
+using MembershipService.Application.Services;
+using MembershipService.Domain.Models; 
+using MembershipService.Infrastructure.Integrations; 
+using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework; 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-// --- Your Project's Namespaces (assuming these) ---
-// Make sure these 'using' statements match your project's structure
-using MembershipService.Application.Services;
-using MembershipService.Application.Common.Interfaces;
-using MembershipService.Domain.Models;
-using MembershipService.Infrastructure.Interfaces; // For IVtexMembershipClient
-
-/// <summary>
-/// Contains all unit tests for the MembershipInfoService.
-/// </summary>
-public class MembershipInfoServiceTests
+namespace MembershipService.Application.Tests
 {
-    private readonly Mock<ILogger<MembershipInfoService>> _mockLogger;
-    private readonly Mock<IVtexMembershipClient> _mockClient;
-    private readonly MembershipInfoService _service;
-
-    public MembershipInfoServiceTests()
+    [TestFixture] 
+    public class MembershipInfoServiceTests
     {
-        _mockLogger = new Mock<ILogger<MembershipInfoService>>();
-        _mockClient = new Mock<IVtexMembershipClient>();
-        _service = new MembershipInfoService(_mockLogger.Object, _mockClient.Object);
-    }
+        private Mock<ILogger<MembershipInfoService>> _mockLogger;
+        private Mock<IVtexMembershipRepository> _mockVtexMembershipRepository;
+        private MembershipInfoService _service;
 
-    [Fact]
-    public async Task GetActiveMembershipInfo_ReturnsSuccessfulResult_WhenClientProvidesValidData()
-    {
-        // ARRANGE
-
-        var membershipList = new List<MembershipInfo> { new MembershipInfo() };
-        var clientResponse = new MembershipResponse
+        [SetUp] 
+        public void Setup()
         {
-            Error = null,
-            MembershipInfos = membershipList
-        };
+            // 1. Create Mocks
+            _mockLogger = new Mock<ILogger<MembershipInfoService>>();
+            _mockVtexMembershipRepository = new Mock<IVtexMembershipRepository>();
 
-        _mockClient.Setup(c => c.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(clientResponse);
+            // 2. Instantiate the class under test
+            _service = new MembershipInfoService(_mockLogger.Object, _mockVtexMembershipRepository.Object);
+        }
 
-        // ACT
-        var result = await _service.GetActiveMembershipInfo("token", "key", "active");
-
-        // ASSERT
-        Assert.NotNull(result);
-        Assert.Null(result.Error);
-        Assert.Equal(membershipList, result.MembershipInfos);
-
-        // Verify informational logs.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Attempting to get Membership information")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Membership Information Received")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-
-        // Verify no warning was logged.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Never);
-    }
-
-
-    [Theory] // WE CAN USE THEORY HERE
-    [InlineData("SERVICE_UNAVAILABLE")]
-    [InlineData("INTERNAL_ERROR")]
-    public async Task GetActiveMembershipInfo_ReturnsClientError_WhenClientReturnsError(string error)
-    {
-        // ARRANGE
-        var clientResponse = new MembershipResponse
+        [Test] 
+        public async Task GetActiveMembershipInfo_WhenRepositoryReturnsData_ShouldReturnMappedDtoList()
         {
-            Error = error,
-            MembershipInfos = null
-        };
+            // Arrange
+            var mockDomainData = new List<MembershipInfo> { new MembershipInfo { Id = "1" }, new MembershipInfo { Id = "2" } };
 
-        _mockClient.Setup(c => c.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(clientResponse);
+            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipInfo()).ReturnsAsync(mockDomainData);
 
-        // ACT
-        var result = await _service.GetActiveMembershipInfo("token", "key", "active");
+            // Act
+            var result = await _service.GetActiveMembershipInfo();
 
-        // ASSERT
-        Assert.NotNull(result);
-        Assert.Equal(error, result.Error);
-        Assert.Null(result.MembershipInfos);
+            // Assert
+            Assert.That(result, Is.Not.Null); 
+            Assert.That(result.Count(), Is.EqualTo(2)); 
+            Assert.That(result, Is.AssignableTo<IEnumerable<MembershipDto>>()); 
 
-        // Verify the "Attempting" log was called.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Attempting to get Membership information")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
+            var firstResult = result.First();
+            Assert.That(firstResult.Id, Is.EqualTo(mockDomainData.First().Id)); 
 
-        // Verify the "Received" log was *NOT* called, as the method returned early.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Membership Information Received")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Never);
-    }
+            _mockVtexMembershipRepository.Verify(repo => repo.GetActiveMembershipInfo(), Times.Once);
+        }
 
-    [Fact]
-    public async Task GetActiveMembershipInfo_ReturnsNotFound_WhenClientReturnsEmptyList()
-    {
-        // ARRANGE
-        var clientResponse = new MembershipResponse
+        [Test] 
+        public async Task GetActiveMembershipInfo_WhenRepositoryReturnsNull_ShouldReturnEmptyList()
         {
-            Error = null,
-            MembershipInfos = new List<MembershipInfo>() 
-        };
+            // Arrange
+            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipInfo()).ReturnsAsync((List<MembershipInfo>)null);
 
-        _mockClient.Setup(c => c.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(clientResponse);
+            // Act
+            var result = await _service.GetActiveMembershipInfo();
 
-        // ACT
-        var result = await _service.GetActiveMembershipInfo("token", "key", "active");
+            // Assert
+            Assert.That(result, Is.Not.Null); 
+            Assert.That(result, Is.Empty);
+        }
 
-        // ASSERT
-        Assert.NotNull(result);
-        Assert.Equal("NOT_FOUND", result.Error);
-        Assert.NotNull(result.MembershipInfos); 
-        Assert.Empty(result.MembershipInfos); // Check if the list is empty
-
-        // Verify the Warning log was called.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("List of Membership Information from VTEX endpoint is an empty list or null")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task GetActiveMembershipInfo_ReturnsNotFound_WhenClientReturnsNullMemberships()
-    {
-        // ARRANGE
-        var clientResponse = new MembershipResponse
+        [Test] 
+        public async Task GetActiveMembershipInfo_WhenRepositoryReturnsEmptyList_ShouldReturnEmptyList()
         {
-            Error = null,
-            MembershipInfos = null // Null list
-        };
+            // Arrange
+            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipInfo()).ReturnsAsync(new List<MembershipInfo>());
 
-        // 2. Setup the mock client.
-        _mockClient.Setup(c => c.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(clientResponse);
+            // Act
+            var result = await _service.GetActiveMembershipInfo();
 
-        // ACT
-        var result = await _service.GetActiveMembershipInfo("token", "key", "active");
-
-        // ASSERT
-        Assert.NotNull(result);
-        Assert.Equal("NOT_FOUND", result.Error);
-        Assert.Null(result.MembershipInfos);
-
-        // Verify the Warning log was called.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("List of Membership Information from VTEX endpoint is an empty list or null")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-    }
-
-    /// <summary>
-    /// Test 5: The "Unhappy Path" (Exception)
-    /// Verifies that if the client *throws an exception*, the service
-    /// does *not* catch it and lets it propagate up.
-    /// </summary>
-    [Fact]
-    public async Task GetActiveMembershipInfo_ThrowsException_WhenClientThrowsException()
-    {
-        // ARRANGE
-        // 1. Define the exception.
-        var clientException = new Exception("Client connection failed!");
-
-        // 2. Setup the mock client to *throw* the exception.
-        _mockClient.Setup(c => c.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ThrowsAsync(clientException);
-
-        // ACT & ASSERT
-        // 1. Verify that the *exact* exception is thrown by the service.
-        //    The service's code does not have a try-catch, so the exception
-        //    should bubble up.
-        var ex = await Assert.ThrowsAsync<Exception>(() =>
-            _service.GetActiveMembershipInfo("token", "key", "active")
-        );
-
-        // 2. Check that it is the same exception.
-        Assert.Equal(clientException.Message, ex.Message);
-
-        // 3. Verify only the "Attempting" log was called.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Attempting to get Membership information")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-
-        // 4. Verify no other logs were called.
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Membership Information Received")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Never);
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Never);
+            // Assert
+            Assert.That(result, Is.Not.Null); 
+            Assert.That(result, Is.Empty);
+        }
     }
 }

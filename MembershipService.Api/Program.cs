@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IMembershipInfoService, MembershipInfoService>();
-builder.Services.AddScoped<IVtexMembershipClient, VtexMembershipClient>();
+builder.Services.AddScoped<IVtexMembershipRepository, VtexMembershipRepository>();
 
 //builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();

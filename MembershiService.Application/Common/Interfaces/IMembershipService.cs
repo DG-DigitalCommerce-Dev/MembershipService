@@ -4,15 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using MembershipService.Application.DTOs;
 namespace MembershipService.Application.Common.Interfaces
 {
     public interface IMembershipInfoService
     {
-        Task<MembershipResponse> GetActiveMembershipInfo(
-            string xVtexAPIAppToken,
-            string xVtexAPIAppKey,
-            string status
-        );
+        Task<IEnumerable<MembershipDto>> GetActiveMembershipInfo();
     }
 }

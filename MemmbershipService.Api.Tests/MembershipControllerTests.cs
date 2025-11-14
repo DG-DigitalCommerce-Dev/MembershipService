@@ -1,155 +1,93 @@
-﻿using MembershipService.Api.Controllers;
-using MembershipService.Application.Common.Interfaces;
-using MembershipService.Domain.Models;
-using MembershipService.Infrastructure.Integrations;
-using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MembershipService.Api.Controllers; 
+using MembershipService.Api.Models; 
+using MembershipService.Application.Common.Interfaces; 
+using MembershipService.Application.DTOs; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+using NUnit.Framework; 
 
 namespace MembershipService.Api.Tests
 {
+    [TestFixture] 
     public class MembershipControllerTests
     {
-        private readonly Mock<ILogger<VtexMembershipClient>> _mockLogger;
+        private Mock<IMembershipInfoService> _mockMembershipInfoService;
+        private Mock<ILogger<MembershipController>> _mockLogger;
+        private MembershipController _controller;
 
-        [Fact]
-        public async Task GetActiveMembership_ReturnsOkResult_WhenResultIsValid()
+        [SetUp] 
+        public void Setup()
+        {
+            _mockMembershipInfoService = new Mock<IMembershipInfoService>();
+            _mockLogger = new Mock<ILogger<MembershipController>>();
+            _controller = new MembershipController(_mockMembershipInfoService.Object, _mockLogger.Object);
+        }
+
+        [Test] 
+        public async Task GetActiveMembership_WhenServiceReturnsData_ReturnsOkWithMappedResponse()
         {
             // Arrange
-            var mockService = new Mock<IMembershipInfoService>();
-            var mockLogger = new Mock<ILogger<MembershipController>>();
+            var mockPlanDto = new PlanDto { Id = "plan_basic_123" };
+            var mockServiceResult = new List<MembershipDto> { new MembershipDto { Id = "sub_001", CustomerId = "cust_abc", Status = "active", PlanDto = mockPlanDto } };
 
-            var expectedMembershipInfos = new List<MembershipInfo> { new MembershipInfo() }; 
-            var serviceResult = new MembershipResponse()
-            {
-                Error = "",
-                MembershipInfos = expectedMembershipInfos
-            };
+            _mockMembershipInfoService.Setup(s => s.GetActiveMembershipInfo()).ReturnsAsync(mockServiceResult);
 
-            mockService.Setup(s => s.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(serviceResult);
-
-            var controller = new MembershipController(mockService.Object,mockLogger.Object);
-
-            var httpContext = new Mock<HttpContext>();
-            var request = new Mock<HttpRequest>();
-            var path = new PathString("/api/v1/membership/skus");
-
-            request.Setup(r => r.Path).Returns(path);
-            httpContext.Setup(h => h.Request).Returns(request.Object);
-
-            controller.ControllerContext = new ControllerContext()
-            {
-                HttpContext = httpContext.Object
-            };
-            
             // Act
-            var result = await controller.GetActiveMembership("token", "key", "active");
+            var actionResult = await _controller.GetActiveMembership();
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(expectedMembershipInfos, okResult.Value);
+            Assert.That(actionResult.Result, Is.InstanceOf<OkObjectResult>());
+            var okResult = (OkObjectResult)actionResult.Result;
+
+            Assert.That(okResult.Value, Is.AssignableTo<IEnumerable<SubscriptionResponse>>());
+            var responseValue = (IEnumerable<SubscriptionResponse>)okResult.Value;
+
+            Assert.That(responseValue, Has.Exactly(1).Items); 
+
+            var firstItem = responseValue.First();
+            Assert.That(firstItem.Id, Is.EqualTo("sub_001")); 
+            Assert.That(firstItem.Customer, Is.EqualTo("cust_abc"));
+            Assert.That(firstItem.Status, Is.EqualTo("active"));
+            Assert.That(firstItem.PlanId, Is.EqualTo("plan_basic_123"));
         }
 
-        [Theory]
-        [InlineData("NOT_FOUND", StatusCodes.Status404NotFound)]
-        [InlineData("INVALID_REQUEST", StatusCodes.Status400BadRequest)]
-        [InlineData("SERVICE_UNAVAILABLE", StatusCodes.Status503ServiceUnavailable)]
-        [InlineData("SOME_UNKNOWN_ERROR", StatusCodes.Status500InternalServerError)] 
-        public async Task GetActiveMembership_ReturnsCorrectStatusCode_BasedOnError(string error, int expectedStatusCode)
+        [Test] // <-- Replaces [Fact]
+        public async Task GetActiveMembership_WhenServiceReturnsEmptyList_ReturnsNotFound()
         {
-            // ARRANGE
-            var mockService = new Mock<IMembershipInfoService>();
-            var mockLogger = new Mock<ILogger<MembershipController>>();
+            // Arrange
+            var mockServiceResult = new List<MembershipDto>();
 
-            var serviceResult = new MembershipResponse()
-            {
-                Error = error,
-                MembershipInfos = null
-            };
+            _mockMembershipInfoService.Setup(s => s.GetActiveMembershipInfo()).ReturnsAsync(mockServiceResult);
 
-            mockService
-                .Setup(s => s.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(serviceResult);
+            // Act
+            var actionResult = await _controller.GetActiveMembership();
 
-            var controller = new MembershipController(mockService.Object, mockLogger.Object);
-            var httpContext = new Mock<HttpContext>();
-            var request = new Mock<HttpRequest>();
-            var path = new PathString("/api/v1/membership/skus"); // A mock path
+            // Assert
+            Assert.That(actionResult.Result, Is.InstanceOf<NotFoundObjectResult>());
+            var notFoundResult = (NotFoundObjectResult)actionResult.Result;
 
-            request.Setup(r => r.Path).Returns(path);
-            httpContext.Setup(h => h.Request).Returns(request.Object);
-
-            controller.ControllerContext = new ControllerContext()
-            {
-                HttpContext = httpContext.Object
-            };
-            // ACT
-            var result = await controller.GetActiveMembership("token", "key", "active");
-
-            // ASSERT
-            
-            // Checks if the result is of same type or derived type 
-            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
-
-            Assert.Equal(expectedStatusCode, objectResult.StatusCode);
-
-            Assert.Equal(serviceResult, objectResult.Value);
+            Assert.That(notFoundResult.Value, Is.EqualTo("No subscriptions found.")); 
         }
 
-        [Fact]
-        public async Task GetActiveMembership_Returns500InternalServerError_WhenServiceThrowsException()
+        [Test] 
+        public async Task GetActiveMembership_WhenServiceReturnsNull_ReturnsNotFound()
         {
-            // ARRANGE
-            var mockService = new Mock<IMembershipInfoService>();
-            var mockLogger = new Mock<ILogger<MembershipController>>();
+            // Arrange
+            _mockMembershipInfoService.Setup(s => s.GetActiveMembershipInfo()).ReturnsAsync((List<MembershipDto>)null);
 
-            var exceptionMessage = "Some Exception!";
-            var serviceException = new Exception(exceptionMessage);
+            // Act
+            var actionResult = await _controller.GetActiveMembership();
 
-            mockService
-                .Setup(s => s.GetActiveMembershipInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ThrowsAsync(serviceException);
+            // Assert
+            Assert.That(actionResult.Result, Is.InstanceOf<NotFoundObjectResult>());
+            var notFoundResult = (NotFoundObjectResult)actionResult.Result;
 
-            var controller = new MembershipController(mockService.Object, mockLogger.Object);
-            var httpContext = new Mock<HttpContext>();
-            var request = new Mock<HttpRequest>();
-            var path = new PathString("/api/v1/membership/skus"); 
-
-            request.Setup(r => r.Path).Returns(path);
-            httpContext.Setup(h => h.Request).Returns(request.Object);
-
-            controller.ControllerContext = new ControllerContext()
-            {
-                HttpContext = httpContext.Object
-            };
-            // ACT
-            var result = await controller.GetActiveMembership("token", "key", "active");
-
-            // ASSERT
-            var objectResult = Assert.IsType<ObjectResult>(result);
-
-            Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
-
-            Assert.Equal(exceptionMessage, objectResult.Value);
-
-            // Verify the error was logged
-            mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((state, type) => state.ToString().Contains("Issue in retrieving membership information: Message=Some Exception!")),
-                    It.IsAny<Exception>(), 
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+            Assert.That(notFoundResult.Value, Is.EqualTo("No subscriptions found.")); // Replaces Assert.Equal
         }
-
     }
 }

@@ -1,8 +1,8 @@
 ﻿using MembershipService.Application.Common.Interfaces;
-using MembershipService.Domain.Models;
+using MembershipService.Application.DTOs;
+using MembershipService.Domain.Constants;
 using MembershipService.Infrastructure.Integrations.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Net.Http;
 
 namespace MembershipService.Application.Services
 {
@@ -17,33 +17,39 @@ namespace MembershipService.Application.Services
             _logger = logger;
         }
 
-        public async Task<SubscriptionResponse> GetSubscriptionPlansAsync()
+        public async Task<IEnumerable<SubscriptionDto>> GetAllAsync()
         {
-            try
-            {
-                var result = await _vtexClient.GetSubscriptionPlansAsync();
+            // Log VTEX fetch starting
+            _logger.LogInformation(LogMessages.FetchingFromVtex);
 
-                if (result == null || result.Subscriptions.Count == 0)
+            var domainResponse = await _vtexClient.GetSubscriptionPlansAsync();
+
+            // If no subscriptions returned
+            if (domainResponse == null || domainResponse.Subscriptions.Count == 0)
+            {
+                _logger.LogWarning(LogMessages.NoSubscriptionsFound);
+                return Enumerable.Empty<SubscriptionDto>();
+            }
+
+            // Log DTO transformation step
+            _logger.LogInformation(LogMessages.TransformingToDto);
+
+            var dtoList = domainResponse.Subscriptions.Select(plan =>
+                new SubscriptionDto
                 {
-                    return new SubscriptionResponse
+                    PlanType = plan.PlanType,
+                    Frequency = plan.Frequency,
+                    Skus = plan.Skus.Select(s => new SkuDto
                     {
-                        Subscriptions = new(),
-                        Error = "NOT_FOUND"
-                    };
+                        SkuId = s.SkuId,
+                        Price = s.Price,
+                        Status = s.Status,
+                        StockAvailable = s.StockAvailable
+                    }).ToList()
                 }
+            ).ToList();
 
-                return result;
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "VTEX API call failed.");
-                return new SubscriptionResponse { Error = "SERVICE_UNAVAILABLE" };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error occurred in SubscriptionService.");
-                return new SubscriptionResponse { Error = "INTERNAL_ERROR" };
-            }
+            return dtoList;
         }
     }
 }

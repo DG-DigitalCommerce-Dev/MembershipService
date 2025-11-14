@@ -2,10 +2,9 @@
 {
     public class Sku
     {
-        public string SkuId { get; set; } = string.Empty;
-        public string Ean { get; set; } = string.Empty;
+        public string SkuId { get; set; }
         public decimal? Price { get; set; }
-        public string Status { get; set; } = string.Empty;
+        public string Status { get; set; }
         public bool StockAvailable { get; set; }
     }
 }

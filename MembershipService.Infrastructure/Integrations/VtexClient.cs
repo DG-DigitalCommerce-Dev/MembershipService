@@ -1,7 +1,7 @@
 ﻿using MembershipService.Domain.Models;
 using MembershipService.Infrastructure.Constants;
 using MembershipService.Infrastructure.Integrations.Interfaces;
-using MembershipService.Infrastructure.Models;
+using MembershipService.Domain.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
@@ -31,11 +31,13 @@ namespace MembershipService.Infrastructure.Integrations
             _catalogClient.BaseAddress = new Uri(_settings.BaseUrl.TrimEnd('/') + "/");
             _catalogClient.DefaultRequestHeaders.Add(VtexConstants.AppKeyHeader, _settings.AppKey);
             _catalogClient.DefaultRequestHeaders.Add(VtexConstants.AppTokenHeader, _settings.AppToken);
+            _catalogClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
             _pricingClient = new HttpClient();
             _pricingClient.BaseAddress = new Uri("https://api.vtex.com/globallogicpartnerus/pricing/");
             _pricingClient.DefaultRequestHeaders.Add(VtexConstants.AppKeyHeader, _settings.AppKey);
             _pricingClient.DefaultRequestHeaders.Add(VtexConstants.AppTokenHeader, _settings.AppToken);
+            _pricingClient.DefaultRequestHeaders.Add("Accept", "application/json");
         }
 
         public async Task<SubscriptionResponse?> GetSubscriptionPlansAsync()
@@ -46,6 +48,9 @@ namespace MembershipService.Infrastructure.Integrations
             {
                 string refId = entry.Key;
                 var map = entry.Value;
+
+                // NEW LOG ------------
+                _logger.LogInformation(LogMessages.FetchProduct, refId);
 
                 var productRoot = await GetWithRetry(() => GetProductAsync(refId), 2);
                 if (!productRoot.HasValue)
@@ -68,6 +73,10 @@ namespace MembershipService.Infrastructure.Integrations
                         if (item.TryGetProperty("Id", out var idEl))
                         {
                             string skuId = idEl.GetString() ?? "";
+
+                            // NEW LOG ------------
+                            _logger.LogInformation(LogMessages.FetchPrice, skuId);
+
                             await AddSku(plan.Skus, skuId, productRoot.Value);
                             addedSku = true;
                         }
@@ -78,6 +87,10 @@ namespace MembershipService.Infrastructure.Integrations
                     productRoot.Value.TryGetProperty("Id", out var prodIdEl))
                 {
                     string productId = prodIdEl.GetInt32().ToString();
+
+                    // NEW LOG ------------
+                    _logger.LogInformation(LogMessages.FetchPrice, productId);
+
                     await AddSku(plan.Skus, productId, productRoot.Value);
                 }
 
@@ -119,6 +132,7 @@ namespace MembershipService.Infrastructure.Integrations
                 var result = await func();
                 if (result != null)
                     return result;
+
                 await Task.Delay(300);
             }
             return default;
@@ -133,7 +147,7 @@ namespace MembershipService.Infrastructure.Integrations
                 priceRoot.Value.TryGetProperty("basePrice", out var priceEl) &&
                 priceEl.ValueKind == JsonValueKind.Number)
             {
-                price = (decimal)priceEl.GetDouble();
+                price = priceEl.GetDecimal();
             }
 
             string status = price.HasValue && price > 0 ? "ACTIVE" : "INACTIVE";

@@ -1,10 +1,9 @@
-﻿using MembershipService.Domain.Models;
-using System.Threading.Tasks;
+﻿using MembershipService.Application.DTOs;
 
 namespace MembershipService.Application.Common.Interfaces
 {
     public interface ISubscriptionService
     {
-        Task<SubscriptionResponse> GetSubscriptionPlansAsync();
+        Task<IEnumerable<SubscriptionDto>> GetAllAsync();
     }
 }

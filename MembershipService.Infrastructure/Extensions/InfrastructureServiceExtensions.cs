@@ -1,6 +1,5 @@
 ﻿using MembershipService.Infrastructure.Integrations;
 using MembershipService.Infrastructure.Integrations.Interfaces;
-using MembershipService.Infrastructure.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;

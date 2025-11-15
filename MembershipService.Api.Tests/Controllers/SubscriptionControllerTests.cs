@@ -1,10 +1,16 @@
-﻿using NUnit.Framework;
-using Moq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
 using MembershipService.Api.Controllers;
-using MembershipService.Application.Services;
+using MembershipService.Application.Common.Interfaces;
+using MembershipService.Application.Common.Mappings;
+using MembershipService.Application.DTOs;
+using MembershipService.Application.Mapping;
+using MembershipService.Application.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System;
 
 namespace MembershipService.Api.Tests.Controllers
@@ -12,110 +18,181 @@ namespace MembershipService.Api.Tests.Controllers
     [TestFixture]
     public class SubscriptionControllerTests
     {
-        private Mock<ISubscriptionService> _mockService;
+        private Mock<ISubscriptionService> _serviceMock;
+        private Mock<ILogger<SubscriptionController>> _loggerMock;
+        private IMapper _mapper;
         private SubscriptionController _controller;
 
         [SetUp]
         public void Setup()
         {
-            // Initialize the Mock Service
-            _mockService = new Mock<ISubscriptionService>();
-            _controller = new SubscriptionController(_mockService.Object);
-        }
+            _serviceMock = new Mock<ISubscriptionService>();
+            _loggerMock = new Mock<ILogger<SubscriptionController>>();
 
-        // Helper method to create a realistic response object from the Service
-        private List<object> GetMockServiceResponse()
-        {
-            var mockProduct = new
+            var mapperConfig = new MapperConfiguration(cfg =>
             {
-                RefId = "dg-plus-sub-monthly",
-                ProductDetails = new { ShowWithoutStock = true },
-                PriceDetails = new { basePrice = 99.99 }
+                cfg.AddProfile<SubscriptionProfile>();
+            });
+
+            _mapper = mapperConfig.CreateMapper();
+
+            _controller = new SubscriptionController(
+                _serviceMock.Object,
+                _loggerMock.Object,
+                _mapper
+            );
+        }
+
+        [Test]
+        public async Task GetPlans_ReturnsOk_WithMappedData()
+        {
+            var dtoList = new List<SubscriptionDto>
+            {
+                new SubscriptionDto
+                {
+                    PlanType = "MONTHLY",
+                    Frequency = "1 month",
+                    Skus = new List<SkuDto>
+                    {
+                        new SkuDto
+                        {
+                            SkuId = "111",
+                            Price = 199,
+                            Status = "ACTIVE",
+                            StockAvailable = true
+                        }
+                    }
+                }
             };
-            return new List<object> { mockProduct };
+
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtoList);
+
+            var result = await _controller.GetPlans();
+            var ok = (OkObjectResult)result;
+
+            var subscriptions = ok.Value.GetType()
+                .GetProperty("subscriptions")
+                .GetValue(ok.Value) as List<SubscriptionResponseModel>;
+
+            var error = ok.Value.GetType()
+                .GetProperty("error")
+                .GetValue(ok.Value);
+
+            Assert.That(error, Is.Null);
+            Assert.That(subscriptions.Count, Is.EqualTo(1));
+            Assert.That(subscriptions[0].PlanType, Is.EqualTo("MONTHLY"));
+            Assert.That(subscriptions[0].Skus[0].SkuId, Is.EqualTo("111"));
         }
 
-        //=SUCCESS SCENARIO
         [Test]
-        public async Task GetSubscriptions_Success_ReturnsOkWithTransformedData()
+        public async Task GetPlans_ReturnsMappedData_ForMultiplePlansAndSkus()
         {
-            // Arrange
-            _mockService.Setup(s => s.GetSubscriptionsWithPricingAsync(It.IsAny<List<string>>()))
-                        .ReturnsAsync(GetMockServiceResponse());
+            var dtoList = new List<SubscriptionDto>
+            {
+                new SubscriptionDto
+                {
+                    PlanType = "MONTHLY",
+                    Frequency = "1 month",
+                    Skus = new List<SkuDto>
+                    {
+                        new SkuDto { SkuId = "111", Price = 199, Status = "ACTIVE", StockAvailable = true },
+                        new SkuDto { SkuId = "112", Price = 299, Status = "ACTIVE", StockAvailable = false }
+                    }
+                },
+                new SubscriptionDto
+                {
+                    PlanType = "YEARLY",
+                    Frequency = "12 months",
+                    Skus = new List<SkuDto>
+                    {
+                        new SkuDto { SkuId = "999", Price = 999, Status = "ACTIVE", StockAvailable = true }
+                    }
+                }
+            };
 
-            // Act
-            var result = await _controller.GetSubscriptions();
+            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtoList);
 
-            // Assert
-            Assert.That(result, Is.InstanceOf<OkObjectResult>());
-            var okResult = result as OkObjectResult;
-            Assert.That(okResult.StatusCode, Is.EqualTo(200));
+            var result = await _controller.GetPlans();
+            var ok = (OkObjectResult)result;
 
-           
-            var json = System.Text.Json.JsonSerializer.Serialize(okResult.Value);
-            var parsed = System.Text.Json.JsonDocument.Parse(json).RootElement;
+            var subscriptions =
+                (List<SubscriptionResponseModel>)ok.Value.GetType()
+                .GetProperty("subscriptions")
+                .GetValue(ok.Value);
 
-            Assert.That(parsed.TryGetProperty("subscriptions", out var subs), Is.True);
-            Assert.That(subs.GetArrayLength(), Is.EqualTo(1));
-
-            var subscription = subs[0];
-            Assert.That(subscription.GetProperty("planType").GetString(), Is.EqualTo("MONTHLY"));
-            Assert.That(subscription.GetProperty("frequency").GetString(), Is.EqualTo("1 month"));
-
-            var sku = subscription.GetProperty("skus")[0];
-            Assert.That(sku.GetProperty("price").GetDouble(), Is.EqualTo(99.99));
-            Assert.That(sku.GetProperty("status").GetString(), Is.EqualTo("ACTIVE"));
-            Assert.That(sku.GetProperty("stockAvailable").GetBoolean(), Is.True);
+            Assert.That(subscriptions.Count, Is.EqualTo(2));
+            Assert.That(subscriptions[0].Skus.Count, Is.EqualTo(2));
+            Assert.That(subscriptions[1].PlanType, Is.EqualTo("YEARLY"));
         }
 
-        //NOT FOUND SCENARIO
         [Test]
-        public async Task GetSubscriptions_ServiceReturnsEmpty_ReturnsNotFound404()
+        public async Task GetPlans_WhenServiceReturnsEmpty_ShouldReturnEmptyList()
         {
-            // Arrange
-            _mockService.Setup(s => s.GetSubscriptionsWithPricingAsync(It.IsAny<List<string>>()))
-                        .ReturnsAsync(new List<object>());
+            _serviceMock.Setup(s => s.GetAllAsync())
+                        .ReturnsAsync(new List<SubscriptionDto>());
 
-            // Act
-            var result = await _controller.GetSubscriptions();
+            var result = await _controller.GetPlans();
+            var ok = (OkObjectResult)result;
 
-            // Assert
-            Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
-            var notFoundResult = result as NotFoundObjectResult;
-            Assert.That(notFoundResult.StatusCode, Is.EqualTo(404));
+            var subscriptions =
+                (List<SubscriptionResponseModel>)ok.Value.GetType()
+                .GetProperty("subscriptions")
+                .GetValue(ok.Value);
 
-            // Deserialize
-            var json = System.Text.Json.JsonSerializer.Serialize(notFoundResult.Value);
-            var parsed = System.Text.Json.JsonDocument.Parse(json).RootElement;
-
-            Assert.That(parsed.GetProperty("error").GetProperty("code").GetString(), Is.EqualTo("NOT_FOUND"));
-            Assert.That(parsed.GetProperty("error").GetProperty("message").GetString(), Is.EqualTo("No subscriptions found."));
+            Assert.That(subscriptions, Is.Empty);
         }
 
-        // INTERNAL SERVER ERROR (500)
         [Test]
-        public async Task GetSubscriptions_ServiceThrowsException_ReturnsInternalServerError500()
+        public async Task GetPlans_WhenServiceReturnsNull_ShouldReturnEmptyList()
         {
-            // Arrange
-            _mockService.Setup(s => s.GetSubscriptionsWithPricingAsync(It.IsAny<List<string>>()))
-                        .ThrowsAsync(new Exception("Database connection pool exhausted."));
+            _serviceMock.Setup(s => s.GetAllAsync())
+                        .ReturnsAsync((List<SubscriptionDto>)null);
 
-            // Act
-            var result = await _controller.GetSubscriptions();
+            var result = await _controller.GetPlans();
+            var ok = (OkObjectResult)result;
 
-            // Assert
-            Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;
-            Assert.That(objectResult.StatusCode, Is.EqualTo(500));
+            var subscriptions =
+                (List<SubscriptionResponseModel>)ok.Value.GetType()
+                .GetProperty("subscriptions")
+                .GetValue(ok.Value);
 
-            // Deserialize
-            var json = System.Text.Json.JsonSerializer.Serialize(objectResult.Value);
-            var parsed = System.Text.Json.JsonDocument.Parse(json).RootElement;
+            Assert.That(subscriptions, Is.Null.Or.Empty);
+        }
 
-            Assert.That(parsed.GetProperty("error").GetProperty("code").GetString(), Is.EqualTo("SERVICE_UNAVAILABLE"));
-            var message = parsed.GetProperty("error").GetProperty("message").GetString();
-            Assert.That(message, Does.Contain("Unable to retrieve subscriptions"));
-            Assert.That(message, Does.Contain("Database connection pool exhausted."));
+        [Test]
+        public void GetPlans_WhenServiceTimesOut_ShouldBubbleException()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync())
+                .ThrowsAsync(new TaskCanceledException("Timeout occurred"));
+
+            Assert.ThrowsAsync<TaskCanceledException>(async () => await _controller.GetPlans());
+        }
+
+        [Test]
+        public void GetPlans_WhenServiceThrowsException_ShouldBubbleUp()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync())
+                .ThrowsAsync(new Exception("failure"));
+
+            Assert.ThrowsAsync<Exception>(async () => await _controller.GetPlans());
+        }
+
+        [Test]
+        public async Task GetPlans_ShouldTriggerLogging()
+        {
+            _serviceMock.Setup(s => s.GetAllAsync())
+                        .ReturnsAsync(new List<SubscriptionDto>());
+
+            await _controller.GetPlans();
+
+            _loggerMock.Verify(
+                x => x.Log(
+                    It.IsAny<LogLevel>(),
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                Times.AtLeastOnce);
         }
     }
 }

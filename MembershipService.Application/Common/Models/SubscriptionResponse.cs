@@ -1,10 +1,17 @@
-﻿using MembershipService.Application.DTOs;
-
-namespace MembershipService.Application.Responses
+﻿namespace MembershipService.Application.Models
 {
-    public class SubscriptionResponse
+    public class SubscriptionResponseModel
     {
-        public List<SubscriptionDto> Subscriptions { get; set; } = new();
-        public string? Error { get; set; }
+        public string PlanType { get; set; }
+        public string Frequency { get; set; }
+        public List<SkuResponseModel> Skus { get; set; }
+    }
+
+    public class SkuResponseModel
+    {
+        public string SkuId { get; set; }
+        public decimal? Price { get; set; }
+        public string Status { get; set; }
+        public bool StockAvailable { get; set; }
     }
 }

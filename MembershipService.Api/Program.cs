@@ -1,20 +1,18 @@
+using AutoMapper;
 using MembershipService.Application.Common.Interfaces;
+using MembershipService.Application.Common.Mappings;
+using MembershipService.Application.Mapping;
 using MembershipService.Application.Services;
 using MembershipService.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAutoMapper(typeof(SubscriptionProfile).Assembly);
 
-// Add controllers
 builder.Services.AddControllers();
-
-// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Subscription Services ONLY
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
-
-// Infrastructure (registers IVtexClient, VtexClient, VtexSettings)
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -28,4 +26,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();

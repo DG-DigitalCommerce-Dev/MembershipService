@@ -1,12 +1,15 @@
-﻿using NUnit.Framework;
-using Moq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using MembershipService.Application.Common.Mappings;
+using MembershipService.Application.DTOs;
+using MembershipService.Application.Mapping;
 using MembershipService.Application.Services;
+using MembershipService.Domain.Models;
+using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
+using Moq;
+using NUnit.Framework;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System;
 
 namespace MembershipService.Application.Tests.Services
@@ -14,109 +17,109 @@ namespace MembershipService.Application.Tests.Services
     [TestFixture]
     public class SubscriptionServiceTests
     {
-        private Mock<IConfiguration> _mockConfiguration;
-        private Mock<IConfigurationSection> _mockVtexConfig;
-        private Mock<ILogger<SubscriptionService>> _mockLogger;
-
-        // Mock data for fake API responses
-        private static readonly string MockProductResponse = @"{
-            ""Id"": 100,
-            ""RefId"": ""dg-plus-sub-monthly"",
-            ""ShowWithoutStock"": true,
-            ""items"": [ { ""Id"": 200 } ]
-        }";
-
-        private static readonly string MockPricingResponse = @"{
-            ""itemId"": 200,
-            ""basePrice"": 99.99
-        }";
+        private Mock<IVtexSubscriptionClient> _vtexClientMock;
+        private Mock<ILogger<SubscriptionService>> _loggerMock;
+        private IMapper _mapper;
+        private SubscriptionService _service;
 
         [SetUp]
         public void Setup()
         {
-            _mockLogger = new Mock<ILogger<SubscriptionService>>();
-            _mockConfiguration = new Mock<IConfiguration>();
-            _mockVtexConfig = new Mock<IConfigurationSection>();
+            _vtexClientMock = new Mock<IVtexSubscriptionClient>();
+            _loggerMock = new Mock<ILogger<SubscriptionService>>();
 
-            _mockVtexConfig.SetupGet(x => x["BaseUrl"]).Returns("http://vtex.product.com/");
-            _mockVtexConfig.SetupGet(x => x["AppKey"]).Returns("test-key");
-            _mockVtexConfig.SetupGet(x => x["AppToken"]).Returns("test-token");
-            _mockConfiguration.Setup(x => x.GetSection("VtexApi")).Returns(_mockVtexConfig.Object);
-        }
-
-        //Successful API mock response
-        [Test]
-        public async Task GetSubscriptionsWithPricingAsync_Success_ReturnsCompleteData()
-        {
-            var handler = new MockHttpMessageHandler(request =>
+            var mapperConfig = new MapperConfiguration(cfg =>
             {
-                if (request.RequestUri.ToString().Contains("productgetbyrefid"))
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(MockProductResponse) };
-
-                if (request.RequestUri.ToString().Contains("prices"))
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(MockPricingResponse) };
-
-                return new HttpResponseMessage(HttpStatusCode.NotFound);
+                cfg.AddProfile<SubscriptionProfile>();
+                cfg.AddProfile<DomainToDtoProfile>();
             });
 
-            var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://vtex.product.com/") };
-            var service = new SubscriptionService(httpClient, _mockConfiguration.Object, _mockLogger.Object);
-
-            var refIds = new List<string> { "dg-plus-sub-monthly" };
-            var result = await service.GetSubscriptionsWithPricingAsync(refIds);
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count, Is.EqualTo(1));
+            _mapper = mapperConfig.CreateMapper();
+            _service = new SubscriptionService(
+                _vtexClientMock.Object,
+                _loggerMock.Object,
+                _mapper
+            );
         }
 
-        // VTEX API fails
         [Test]
-        public async Task GetSubscriptionsWithPricingAsync_VtexApiFails_ReturnsError()
+        public async Task GetAllAsync_ReturnsMappedDtos_WhenDataExists()
         {
-            var handler = new MockHttpMessageHandler(request =>
+            var domainResponse = new SubscriptionResponse
             {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
-            });
+                Subscriptions = new List<SubscriptionPlan>
+                {
+                    new SubscriptionPlan
+                    {
+                        PlanType = "MONTHLY",
+                        Frequency = "1 month",
+                        Skus = new List<Sku>
+                        {
+                            new Sku { SkuId = "111", Price = 200, Status = "ACTIVE", StockAvailable = true }
+                        }
+                    }
+                }
+            };
 
-            var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://vtex.product.com/") };
-            var service = new SubscriptionService(httpClient, _mockConfiguration.Object, _mockLogger.Object);
+            _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
+                .ReturnsAsync(domainResponse);
 
-            var result = await service.GetSubscriptionsWithPricingAsync(new List<string> { "dg-plus-sub-monthly" });
+            var result = await _service.GetAllAsync();
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count, Is.EqualTo(1));
+            Assert.That(result, Has.Exactly(1).Items);
+
+            var enumerator = result.GetEnumerator();
+            enumerator.MoveNext();
+            var first = enumerator.Current;
+
+            Assert.That(first.PlanType, Is.EqualTo("MONTHLY"));
+            Assert.That(first.Skus[0].SkuId, Is.EqualTo("111"));
         }
 
-        // Unexpected exception
         [Test]
-        public async Task GetSubscriptionsWithPricingAsync_ThrowsException_ReturnsErrorResult()
+        public async Task GetAllAsync_ReturnsEmpty_WhenNoSubscriptions()
         {
-            var handler = new MockHttpMessageHandler(_ => throw new Exception("Unexpected failure"));
+            var domainResponse = new SubscriptionResponse
+            {
+                Subscriptions = new List<SubscriptionPlan>()
+            };
 
-            var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://vtex.product.com/") };
-            var service = new SubscriptionService(httpClient, _mockConfiguration.Object, _mockLogger.Object);
+            _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
+                .ReturnsAsync(domainResponse);
 
-            var result = await service.GetSubscriptionsWithPricingAsync(new List<string> { "dg-plus-sub-monthly" });
+            var result = await _service.GetAllAsync();
 
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count, Is.EqualTo(1));
-        }
-    }
-
-    // Simple mock Http handler (offline simulation)
-    public class MockHttpMessageHandler : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handlerFunc;
-
-        public MockHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handlerFunc)
-        {
-            _handlerFunc = handlerFunc;
+            Assert.That(result, Is.Empty);
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        [Test]
+        public async Task GetAllAsync_ReturnsEmpty_WhenResponseIsNull()
         {
-            var response = _handlerFunc(request);
-            return Task.FromResult(response);
+            _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
+                .ReturnsAsync((SubscriptionResponse)null);
+
+            var result = await _service.GetAllAsync();
+
+            Assert.That(result, Is.Empty);
+        }
+
+        [Test]
+        public void GetAllAsync_WhenClientThrows_ExceptionBubblesUp()
+        {
+            _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
+                .ThrowsAsync(new Exception("VTEX error"));
+
+            Assert.ThrowsAsync<Exception>(async () => await _service.GetAllAsync());
+        }
+
+        [Test]
+        public void GetAllAsync_WhenClientTimesOut_ShouldBubbleUp()
+        {
+            _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
+                .ThrowsAsync(new TaskCanceledException("timeout"));
+
+            Assert.ThrowsAsync<TaskCanceledException>(async () => await _service.GetAllAsync());
         }
     }
 }

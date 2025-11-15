@@ -1,8 +1,8 @@
 ﻿using MembershipService.Domain.Models;
 
-namespace MembershipService.Infrastructure.Integrations.Interfaces
+namespace MembershipService.Infrastructure.Interfaces
 {
-    public interface IVtexClient
+    public interface IVtexSubscriptionClient
     {
         Task<SubscriptionResponse?> GetSubscriptionPlansAsync();
     }

@@ -1,5 +1,6 @@
-﻿using MembershipService.Application.Common.Interfaces;
-using MembershipService.Api.Models;
+﻿using AutoMapper;
+using MembershipService.Application.Common.Interfaces;
+using MembershipService.Application.Models;
 using MembershipService.Domain.Constants;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,35 +12,27 @@ namespace MembershipService.Api.Controllers
     {
         private readonly ISubscriptionService _service;
         private readonly ILogger<SubscriptionController> _logger;
+        private readonly IMapper _mapper;
 
-        public SubscriptionController(ISubscriptionService service, ILogger<SubscriptionController> logger)
+        public SubscriptionController(
+            ISubscriptionService service,
+            ILogger<SubscriptionController> logger,
+            IMapper mapper)
         {
             _service = service;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet("plans")]
         public async Task<IActionResult> GetPlans()
         {
-            // Log when API request hits controller
             _logger.LogInformation(LogMessages.RequestReceived);
 
             var dtoList = await _service.GetAllAsync();
 
-            var response = dtoList.Select(plan => new SubscriptionResponseModel
-            {
-                PlanType = plan.PlanType,
-                Frequency = plan.Frequency,
-                Skus = plan.Skus.Select(s => new SkuResponseModel
-                {
-                    SkuId = s.SkuId,
-                    Price = s.Price,
-                    Status = s.Status,
-                    StockAvailable = s.StockAvailable
-                }).ToList()
-            }).ToList();
+            var response = _mapper.Map<List<SubscriptionResponseModel>>(dtoList);
 
-            // Log before sending response
             _logger.LogInformation(LogMessages.SendingResponse);
 
             return Ok(new { subscriptions = response, error = (string)null });

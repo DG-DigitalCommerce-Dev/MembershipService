@@ -1,5 +1,5 @@
 ﻿using MembershipService.Infrastructure.Integrations;
-using MembershipService.Infrastructure.Integrations.Interfaces;
+using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -11,10 +11,10 @@ namespace MembershipService.Infrastructure.Extensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<VtexSettings>(configuration.GetSection("VtexApi"));
+            services.Configure<VtexApiSettings>(configuration.GetSection("VtexApi"));
 
-            services.AddHttpClient<IVtexClient, VtexClient>()
-                .AddPolicyHandler(GetRetryPolicy());
+            services.AddHttpClient<IVtexSubscriptionClient, VtexSubscriptionClient>()
+                    .AddPolicyHandler(GetRetryPolicy());
 
             return services;
         }
@@ -23,8 +23,7 @@ namespace MembershipService.Infrastructure.Extensions
         {
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .WaitAndRetryAsync(2, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                .WaitAndRetryAsync(2, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
         }
     }
 }
-

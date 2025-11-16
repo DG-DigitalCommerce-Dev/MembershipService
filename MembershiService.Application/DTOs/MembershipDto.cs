@@ -8,19 +8,6 @@ namespace MembershipService.Application.DTOs
 {
     public class MembershipDto
     {
-        public MembershipDto()
-        {
-        }
-
-        public MembershipDto(MembershipInfo source)
-        {
-            (Id, CustomerId, CustomerEmail, Title, Status, IsSkipped, NextPurchaseDate, LastPurchaseDate, CycleCount, CreatedAt, LastUpdate, LastCycleId) = (source.Id, source.CustomerId, source.CustomerEmail, source.Title, source.Status, source.IsSkipped, source.NextPurchaseDate, source.LastPurchaseDate, source.CycleCount, source.CreatedAt, source.LastUpdate, source.LastCycleId);
-            PlanDto = source.Plan is null ? null : new PlanDto(source.Plan);
-            ShippingAddressDto = source.ShippingAddress is null ? null : new ShippingAddressDto(source.ShippingAddress);
-            PurchaseSettingsDto = source.PurchaseSettings is null ? null : new PurchaseSettingsDto(source.PurchaseSettings);
-            ItemDtos = source.Items?.ConvertAll(item => new ItemDto(item));
-            CustomData = source.CustomData is null ? null : new CustomDataDto(source.CustomData);
-        }
         public string Id { get; set; }
 
         public string CustomerId { get; set; }
@@ -58,18 +45,6 @@ namespace MembershipService.Application.DTOs
 
     public class PlanDto
     {
-        public PlanDto()
-        {
-        }
-
-        public PlanDto(Plan source)
-        {
-            Id = source.Id;
-            FrequencyDto = source.Frequency is null ? null : new FrequencyDto(source.Frequency);
-            ValidityDto = source.Validity is null ? null : new ValidityDto(source.Validity);
-            PurchaseDay = source.PurchaseDay;
-        }
-
         public string Id { get; set; }
 
         public FrequencyDto FrequencyDto { get; set; }
@@ -81,15 +56,6 @@ namespace MembershipService.Application.DTOs
 
     public class FrequencyDto
     {
-        public FrequencyDto()
-        {
-        }
-
-        public FrequencyDto(Frequency source)
-        {
-            Periodicity = source.Periodicity;
-            Interval = source.Interval;
-        }
 
         public string Periodicity { get; set; }
 
@@ -98,16 +64,6 @@ namespace MembershipService.Application.DTOs
 
     public class ValidityDto
     {
-        public ValidityDto()
-        {
-        }
-
-        public ValidityDto(Validity source)
-        {
-            Begin = source.Begin;
-            End = source.End;
-        }
-
         public string Begin { get; set; }
 
         public string End { get; set; }
@@ -115,15 +71,6 @@ namespace MembershipService.Application.DTOs
 
     public class ShippingAddressDto
     {
-        public ShippingAddressDto()
-        {
-        }
-
-        public ShippingAddressDto(ShippingAddress source)
-        {
-            AddressId = source.AddressId;
-            AddressType = source.AddressType;
-        }
 
         public string AddressId { get; set; }
 
@@ -132,19 +79,6 @@ namespace MembershipService.Application.DTOs
 
     public class PurchaseSettingsDto
     {
-        public PurchaseSettingsDto()
-        {
-        }
-
-        public PurchaseSettingsDto(PurchaseSettings source)
-        {
-            PaymentMethodDto = source.PaymentMethod is null ? null : new PaymentMethodDto(source.PaymentMethod);
-            CurrencyCode = source.CurrencyCode;
-            SelectedSla = source.SelectedSla;
-            SalesChannel = source.SalesChannel;
-            Seller = source.Seller;
-        }
-
         public PaymentMethodDto PaymentMethodDto { get; set; }
 
         public string CurrencyCode { get; set; }
@@ -158,19 +92,6 @@ namespace MembershipService.Application.DTOs
 
     public class PaymentMethodDto
     {
-        public PaymentMethodDto()
-        {
-        }
-
-        public PaymentMethodDto(PaymentMethod source)
-        {
-            PaymentAccountId = source.PaymentAccountId;
-            PaymentSystem = source.PaymentSystem;
-            Installments = source.Installments;
-            PaymentSystemName = source.PaymentSystemName;
-            PaymentSystemGroup = source.PaymentSystemGroup;
-        }
-
         public string? PaymentAccountId { get; set; }
 
         public string PaymentSystem { get; set; }
@@ -184,23 +105,6 @@ namespace MembershipService.Application.DTOs
 
     public class ItemDto
     {
-        public ItemDto()
-        {
-        }
-
-        public ItemDto(Item source)
-        {
-            Id = source.Id;
-            SkuId = source.SkuId;
-            Quantity = source.Quantity;
-            IsSkipped = source.IsSkipped;
-            Status = source.Status;
-            CycleCount = source.CycleCount;
-            PriceAtSubscriptionDate = source.PriceAtSubscriptionDate;
-            ManualPrice = source.ManualPrice;
-            AttachmentDtos = source.Attachments?.Select(attachment => new AttachmentDto(attachment)).ToList();
-        }
-
         public string Id { get; set; }
 
         public string SkuId { get; set; }
@@ -218,20 +122,12 @@ namespace MembershipService.Application.DTOs
         public decimal ManualPrice { get; set; } 
 
         public List<AttachmentDto> AttachmentDtos { get; set; }
+
+        public string OriginalOrderId { get; set; }
     }
 
     public class AttachmentDto
     {
-        public AttachmentDto()
-        {
-        }
-
-        public AttachmentDto(Attachment source)
-        {
-            Name = source.Name;
-            Content = source.Content is null ? null : new AttachmentContentDto(source.Content);
-        }
-
         public string Name { get; set; }
 
         public AttachmentContentDto Content { get; set; }
@@ -239,29 +135,11 @@ namespace MembershipService.Application.DTOs
 
     public class AttachmentContentDto
     {
-        public AttachmentContentDto()
-        {
-        }
-
-        public AttachmentContentDto(AttachmentContent source)
-        {
-            AdditionalData = source.AdditionalData;
-        }
-
         public Dictionary<string, object> AdditionalData { get; set; }
     }
 
     public class CustomDataDto
     {
-        public CustomDataDto()
-        {
-        }
-
-        public CustomDataDto(CustomData source)
-        {
-            AdditionalData = source.AdditionalData;
-        }
-
         public Dictionary<string, object> AdditionalData { get; set; }
     }
 }

@@ -25,7 +25,7 @@ namespace MembershipService.Infrastructure.Integrations
             _logger = logger;
             _config = config;
         }
-        public async Task<IEnumerable<MembershipInfo>> GetActiveMembershipInfo()
+        public async Task<IEnumerable<MembershipData>> GetActiveMembershipData()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["baseUrl"]}/api/rns/pub/subscriptions?status=active");
             request.Headers.Add(VtexConstants.acceptHeader, VtexConstants.acceptHeaderValue); 
@@ -40,7 +40,7 @@ namespace MembershipService.Infrastructure.Integrations
                 {
                     return null;
                 }
-                var membershipData = await response.Content.ReadFromJsonAsync<List<MembershipInfo>>();
+                var membershipData = await response.Content.ReadFromJsonAsync<List<MembershipData>>(); 
                 return membershipData;
             } 
             catch (Exception ex)

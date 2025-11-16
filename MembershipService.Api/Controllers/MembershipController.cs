@@ -1,10 +1,12 @@
-﻿using MembershipService.Application.Common.Interfaces;
-using MembershipService.Api.Models;
+﻿using AutoMapper;
+using MembershipService.Application.Common.Models;
+using MembershipService.Application.Common.Interfaces;
+using MembershipService.Domain.Constants;
+using MembershipService.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
-using MembershipService.Domain.Constants;
 
 namespace MembershipService.Api.Controllers
 {
@@ -12,34 +14,28 @@ namespace MembershipService.Api.Controllers
     [Route("/api/[controller]")]
     public class MembershipController : Controller
     {
-        private readonly IMembershipInfoService _membershipInfoService;
+        private readonly IMembershipDataService _membershipDataService;
         private readonly ILogger<MembershipController> _logger;
-        private readonly IConfiguration _config;
-        public MembershipController(IMembershipInfoService membershipInfoService, ILogger<MembershipController> logger)
+        private readonly IMapper _mapper;
+        public MembershipController(IMembershipDataService membershipDataService, ILogger<MembershipController> logger, IMapper mapper)
         {
-            _membershipInfoService = membershipInfoService;
+            _membershipDataService = membershipDataService;
             _logger = logger;
+            _mapper = mapper;
         }
 
-        [HttpGet("skus")] // Endpoint name 
-        public async Task<ActionResult<IEnumerable<SubscriptionResponse>>> GetActiveMembership()
+        [HttpGet("membership/skus")] 
+        public async Task<ActionResult<IEnumerable<MembershipResponse>>> GetActiveMembership()
         {
             _logger.LogInformation(LogMessageConstants.processingMembershipInfoEndpoint);
-            var result = await _membershipInfoService.GetActiveMembershipInfo();
+            var result = await _membershipDataService.GetActiveMembershipData();
 
             if (result == null || !result.Any()) 
             {
                 return NotFound("No subscriptions found.");
             }
 
-            var response = result.Select(dto => new SubscriptionResponse
-            {
-                Id = dto.Id,
-                Customer = dto.CustomerId,
-                Status = dto.Status,
-                PlanId = dto.PlanDto.Id
-
-            });
+            var response = _mapper.Map<IEnumerable<MembershipResponse>>(result);
             return Ok(response);
         }
     }

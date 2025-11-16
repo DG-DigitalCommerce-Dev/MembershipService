@@ -1,4 +1,5 @@
-﻿using MembershipService.Application.Common.Interfaces;
+﻿using AutoMapper;
+using MembershipService.Application.Common.Interfaces;
 using MembershipService.Application.DTOs; 
 using MembershipService.Application.Services;
 using MembershipService.Domain.Models; 
@@ -17,51 +18,52 @@ namespace MembershipService.Application.Tests
     [TestFixture] 
     public class MembershipInfoServiceTests
     {
-        private Mock<ILogger<MembershipInfoService>> _mockLogger;
+        private Mock<ILogger<MembershipDataService>> _mockLogger;
         private Mock<IVtexMembershipRepository> _mockVtexMembershipRepository;
-        private MembershipInfoService _service;
+        private Mock<IMapper> _mapper;
+        private MembershipDataService _service;
 
         [SetUp] 
         public void Setup()
         {
-            // 1. Create Mocks
-            _mockLogger = new Mock<ILogger<MembershipInfoService>>();
+            _mockLogger = new Mock<ILogger<MembershipDataService>>();
             _mockVtexMembershipRepository = new Mock<IVtexMembershipRepository>();
+            _mapper = new Mock<IMapper>();
 
-            // 2. Instantiate the class under test
-            _service = new MembershipInfoService(_mockLogger.Object, _mockVtexMembershipRepository.Object);
+            _service = new MembershipDataService(_mockLogger.Object, _mockVtexMembershipRepository.Object,_mapper.Object);
         }
 
         [Test] 
         public async Task GetActiveMembershipInfo_WhenRepositoryReturnsData_ShouldReturnMappedDtoList()
         {
             // Arrange
-            var mockDomainData = new List<MembershipInfo> { new MembershipInfo { Id = "1" }, new MembershipInfo { Id = "2" } };
+            var mockDomainData = new List<MembershipData> { new MembershipData { Id = "1" }};
 
-            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipInfo()).ReturnsAsync(mockDomainData);
-
+            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipData()).ReturnsAsync(mockDomainData);
+            _mapper.Setup(mapper => mapper.Map<IEnumerable<MembershipDto>>(It.IsAny<IEnumerable<MembershipData>>()))
+                .Returns((IEnumerable<MembershipData> data) => new List<MembershipDto> { new MembershipDto { Id = data.First().Id } });
             // Act
-            var result = await _service.GetActiveMembershipInfo();
+            var result = await _service.GetActiveMembershipData();
 
             // Assert
             Assert.That(result, Is.Not.Null); 
-            Assert.That(result.Count(), Is.EqualTo(2)); 
+            Assert.That(result.Count(), Is.EqualTo(1)); 
             Assert.That(result, Is.AssignableTo<IEnumerable<MembershipDto>>()); 
 
             var firstResult = result.First();
             Assert.That(firstResult.Id, Is.EqualTo(mockDomainData.First().Id)); 
 
-            _mockVtexMembershipRepository.Verify(repo => repo.GetActiveMembershipInfo(), Times.Once);
+            _mockVtexMembershipRepository.Verify(repo => repo.GetActiveMembershipData(), Times.Once);
         }
 
         [Test] 
         public async Task GetActiveMembershipInfo_WhenRepositoryReturnsNull_ShouldReturnEmptyList()
         {
             // Arrange
-            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipInfo()).ReturnsAsync((List<MembershipInfo>)null);
+            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipData()).ReturnsAsync((List<MembershipData>)null);
 
             // Act
-            var result = await _service.GetActiveMembershipInfo();
+            var result = await _service.GetActiveMembershipData();
 
             // Assert
             Assert.That(result, Is.Not.Null); 
@@ -72,10 +74,10 @@ namespace MembershipService.Application.Tests
         public async Task GetActiveMembershipInfo_WhenRepositoryReturnsEmptyList_ShouldReturnEmptyList()
         {
             // Arrange
-            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipInfo()).ReturnsAsync(new List<MembershipInfo>());
+            _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipData()).ReturnsAsync(new List<MembershipData>());
 
             // Act
-            var result = await _service.GetActiveMembershipInfo();
+            var result = await _service.GetActiveMembershipData();
 
             // Assert
             Assert.That(result, Is.Not.Null); 

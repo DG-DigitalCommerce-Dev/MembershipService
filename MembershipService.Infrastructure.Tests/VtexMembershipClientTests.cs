@@ -51,25 +51,25 @@ namespace MembershipService.Infrastructure.Tests
         }
 
         [Test] 
-        public async Task GetActiveMembershipInfo_WhenApiReturnsSuccess_ReturnsMembershipData()
+        public async Task GetActiveMembershipData_WhenApiReturnsSuccess_ReturnsMembershipData()
         {
             // Arrange 
-            var expectedData = new List<MembershipInfo> { new MembershipInfo() { Id = "1" }, new MembershipInfo() { Id = "2" } };
+            var expectedData = new List<MembershipData> { new MembershipData() { Id = "1" }, new MembershipData() { Id = "2" } };
             var httpResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(expectedData) };
             _mockHttpMessageHandler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",ItExpr.IsAny<HttpRequestMessage>(),ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(httpResponse);
 
             // Act
-            var result = await _repository.GetActiveMembershipInfo();
+            var result = await _repository.GetActiveMembershipData();
 
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Count(), Is.EqualTo(2));
-            Assert.That(result, Is.AssignableTo<IEnumerable<MembershipInfo>>());
+            Assert.That(result, Is.AssignableTo<IEnumerable<MembershipData>>());
         }
 
         [Test] 
-        public async Task GetActiveMembershipInfo_WhenApiReturnsFailure_ReturnsNull()
+        public async Task GetActiveMembershipData_WhenApiReturnsFailure_ReturnsNull()
         {
             // Arrange
             var httpResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
@@ -78,14 +78,14 @@ namespace MembershipService.Infrastructure.Tests
                 .ReturnsAsync(httpResponse);
 
             // Act
-            var result = await _repository.GetActiveMembershipInfo();
+            var result = await _repository.GetActiveMembershipData();
 
             // Assert
             Assert.That(result, Is.Null);
         }
 
         [Test] 
-        public async Task GetActiveMembershipInfo_WhenHttpClientThrowsException_ReturnsNull()
+        public async Task GetActiveMembershipData_WhenHttpClientThrowsException_ReturnsNull()
         {
             // Arrange
             var apiException = new HttpRequestException("Network error");
@@ -93,7 +93,7 @@ namespace MembershipService.Infrastructure.Tests
                 .ThrowsAsync(apiException); 
 
             // Act
-            var result = await _repository.GetActiveMembershipInfo(); 
+            var result = await _repository.GetActiveMembershipData(); 
 
             // Assert
             Assert.That(result, Is.Null); 

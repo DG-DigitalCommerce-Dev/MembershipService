@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using MembershipService.Application.DTOs;
 namespace MembershipService.Application.Common.Interfaces
 {
-    public interface IMembershipInfoService
+    public interface IMembershipDataService
     {
-        Task<IEnumerable<MembershipDto>> GetActiveMembershipInfo();
+        Task<IEnumerable<MembershipDto>> GetActiveMembershipData();
     }
 }

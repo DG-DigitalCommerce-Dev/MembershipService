@@ -4,6 +4,6 @@ namespace MembershipService.Infrastructure.Interfaces
 {
     public interface IVtexSubscriptionClient
     {
-        Task<SubscriptionResponse?> GetSubscriptionPlansAsync();
+        Task<Subscription?> GetSubscriptionPlansAsync();
     }
 }

@@ -4,7 +4,6 @@ using MembershipService.Infrastructure.Interfaces;
 using MembershipService.Domain.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net.Http;
 using System.Text.Json;
 namespace MembershipService.Infrastructure.Integrations
 {
@@ -35,7 +34,7 @@ namespace MembershipService.Infrastructure.Integrations
             client.DefaultRequestHeaders.Add(VtexConstants.AppTokenHeader, _settings.AppToken);
             client.DefaultRequestHeaders.Add(VtexConstants.AcceptHeader, VtexConstants.AcceptHeaderValue);
         }
-        public async Task<SubscriptionResponse?> GetSubscriptionPlansAsync()
+        public async Task<Subscription?> GetSubscriptionPlansAsync()
         {
             try
             {
@@ -58,12 +57,12 @@ namespace MembershipService.Infrastructure.Integrations
                 });
                 var planResults = await Task.WhenAll(planTasks);
                 var finalPlans = planResults.Where(p => p != null).ToList()!;
-                return new SubscriptionResponse { Subscriptions = finalPlans };
+                return new Subscription { Subscriptions = finalPlans };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.VtexFetchError);
-                return new SubscriptionResponse
+                return new Subscription
                 {
                     Subscriptions = new List<SubscriptionPlan>(),
                     Error = ex.Message

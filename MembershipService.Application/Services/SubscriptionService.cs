@@ -27,8 +27,8 @@ namespace MembershipService.Application.Services
                 return Enumerable.Empty<SubscriptionDto>();
             }
             _logger.LogInformation(LogMessages.TransformingToDto);
-            var dtoList = _mapper.Map<List<SubscriptionDto>>(domainResponse.Subscriptions);
-            return dtoList;
+            var SubscriptiondtoList = _mapper.Map<List<SubscriptionDto>>(domainResponse.Subscriptions);
+            return SubscriptiondtoList;
         }
     }
 }

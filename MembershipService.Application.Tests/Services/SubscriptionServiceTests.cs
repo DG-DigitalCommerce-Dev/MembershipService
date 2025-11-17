@@ -31,7 +31,7 @@ public class SubscriptionServiceTests
     [Test]
     public async Task ReturnsMappedData()
     {
-        var domainResponse = new SubscriptionResponse
+        var domainResponse = new Subscription
         {
             Subscriptions = new List<SubscriptionPlan>
             {
@@ -59,14 +59,14 @@ public class SubscriptionServiceTests
     public async Task ReturnsEmptyList()
     {
         _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
-            .ReturnsAsync(new SubscriptionResponse { Subscriptions = new List<SubscriptionPlan>() });
+            .ReturnsAsync(new Subscription { Subscriptions = new List<SubscriptionPlan>() });
         var result = await _service.GetAllAsync();
         Assert.That(result, Is.Empty);
     }
     [Test]
     public async Task ReturnsEmptyWhenNull()
     {
-        _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync()).ReturnsAsync((SubscriptionResponse)null);
+        _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync()).ReturnsAsync((Subscription)null);
         var result = await _service.GetAllAsync();
         Assert.That(result, Is.Empty);
     }

@@ -4,6 +4,7 @@ using MembershipService.Application.Services;
 using MembershipService.Infrastructure.Integrations;
 using MembershipService.Infrastructure.Interfaces;
 using MembershipService.Application.Common.Mappings;
+using MembershipService.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +18,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IMembershipDataService, MembershipDataService>();
-builder.Services.AddScoped<IVtexMembershipRepository, VtexMembershipRepository>();
 builder.Services.AddAutoMapper(typeof(MembershipProfile).Assembly);
+builder.Services.AddInfrastructure(builder.Configuration);
 
-//builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

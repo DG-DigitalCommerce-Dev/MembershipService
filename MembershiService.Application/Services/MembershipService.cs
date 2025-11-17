@@ -27,20 +27,20 @@ namespace MembershipService.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<MembershipDto>> GetActiveMembershipData()
+        public async Task<MembershipResponseDto> GetActiveMembershipData(int page)
         {
             _logger.LogInformation(LogMessageConstants.requestingMembershipData);
-            var result = await _vtexMembershipRepository.GetActiveMembershipData();
+            var result = await _vtexMembershipRepository.GetActiveMembershipData(page);
 
             if (result == null)
             {
-                return Enumerable.Empty<MembershipDto>();
+                return null;
             }
 
             _logger.LogInformation(LogMessageConstants.membershipInfoReceived);
             
-            var resultDto = _mapper.Map<IEnumerable<MembershipDto>>(result);
-            return resultDto;
+            var membershipDtos = _mapper.Map<IEnumerable<MembershipDto>>(result.Memberships);
+            return new MembershipResponseDto(membershipDtos, result.TotalCount, result.PageCount);
         }
     }
 }

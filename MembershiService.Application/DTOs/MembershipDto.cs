@@ -6,8 +6,14 @@ using MembershipService.Domain.Models;
 
 namespace MembershipService.Application.DTOs
 {
+    public record MembershipResponseDto(
+        IEnumerable<MembershipDto> Memberships,
+        int TotalCount,
+        int PageCount
+    );
     public class MembershipDto
     {
+        //[Required]
         public string Id { get; set; }
 
         public string CustomerId { get; set; }

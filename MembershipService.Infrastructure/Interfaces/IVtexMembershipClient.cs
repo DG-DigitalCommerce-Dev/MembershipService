@@ -9,7 +9,7 @@ namespace MembershipService.Infrastructure.Interfaces
 {
     public interface IVtexMembershipRepository
     {
-        Task<IEnumerable<MembershipData>> GetActiveMembershipData();
+        Task<VtexMembershipResponse> GetActiveMembershipData(int page);
     }
 
 }

@@ -6,6 +6,11 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 namespace MembershipService.Domain.Models
 {
+    public record VtexMembershipResponse(
+        IEnumerable<MembershipData> Memberships,
+        int TotalCount,
+        int PageCount
+    );
     public class MembershipData
     {
         [JsonPropertyName("id")]

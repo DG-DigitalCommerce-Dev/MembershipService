@@ -9,6 +9,6 @@ namespace MembershipService.Application.Common.Interfaces
 {
     public interface IMembershipDataService
     {
-        Task<IEnumerable<MembershipDto>> GetActiveMembershipData();
+        Task<MembershipResponseDto> GetActiveMembershipData(int page);
     }
 }

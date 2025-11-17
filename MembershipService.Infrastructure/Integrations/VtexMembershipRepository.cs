@@ -13,6 +13,7 @@ using MembershipService.Domain.Constants;
 
 namespace MembershipService.Infrastructure.Integrations
 {
+
     public class VtexMembershipRepository : IVtexMembershipRepository
     {
         private readonly HttpClient _httpClient;
@@ -25,9 +26,9 @@ namespace MembershipService.Infrastructure.Integrations
             _logger = logger;
             _config = config;
         }
-        public async Task<IEnumerable<MembershipData>> GetActiveMembershipData()
+        public async Task<VtexMembershipResponse> GetActiveMembershipData(int page)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["baseUrl"]}/api/rns/pub/subscriptions?status=active");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["baseUrl"]}/api/rns/pub/subscriptions?status=ACTIVE&page={page}");
             request.Headers.Add(VtexConstants.acceptHeader, VtexConstants.acceptHeaderValue); 
             request.Headers.Add(VtexConstants.appTokenHeader, _config["vtexAppToken"]);
             request.Headers.Add(VtexConstants.apiKeyHeader, _config["vtexApiKey"]);
@@ -40,8 +41,12 @@ namespace MembershipService.Infrastructure.Integrations
                 {
                     return null;
                 }
+                response.Headers.TryGetValues("X-Total-Count", out IEnumerable<string>? totalValues);
+                response.Headers.TryGetValues("X-Page-Count", out IEnumerable<string>? pageValues);
+                int.TryParse(totalValues?.FirstOrDefault(), out int totalCount);
+                int.TryParse(pageValues?.FirstOrDefault(), out int pageCount);
                 var membershipData = await response.Content.ReadFromJsonAsync<List<MembershipData>>(); 
-                return membershipData;
+                return new VtexMembershipResponse(membershipData, totalCount, pageCount); 
             } 
             catch (Exception ex)
             {

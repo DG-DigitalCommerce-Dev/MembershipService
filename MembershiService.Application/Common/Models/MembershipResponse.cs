@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 
 namespace MembershipService.Application.Common.Models
 {
+    public record PaginatedMembershipResponse(
+        IEnumerable<MembershipResponse> Memberships,
+        int TotalCount,
+        int PageCount
+    );
     public class MembershipResponse
     {
         public string Id { get; set; }
-
         public string CustomerId { get; set; }
-
         public string CustomerEmail { get; set; }
-
         public string Title { get; set; }
-
         public string Status { get; set; }
 
         public bool IsSkipped { get; set; }
@@ -45,13 +46,9 @@ namespace MembershipService.Application.Common.Models
 
     public class Plan
     {
-
         public string Id { get; set; }
-
         public Frequency Frequency { get; set; }
-
         public Validity Validity { get; set; }
-
         public string PurchaseDay { get; set; }
     }
 
@@ -59,7 +56,6 @@ namespace MembershipService.Application.Common.Models
     {
 
         public string Periodicity { get; set; }
-
         public int Interval { get; set; }
     }
 

@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 namespace MembershipService.Api.Tests.Controllers
 {
     [TestFixture]
@@ -27,11 +28,15 @@ namespace MembershipService.Api.Tests.Controllers
             _serviceMock = new Mock<ISubscriptionService>();
             _loggerMock = new Mock<ILogger<SubscriptionController>>();
 
-            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<SubscriptionProfile>());
-            _mapper = mapperConfig.CreateMapper();
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<SubscriptionProfile>();
+            });
 
+            _mapper = mapperConfig.CreateMapper();
             _controller = new SubscriptionController(_serviceMock.Object, _loggerMock.Object, _mapper);
         }
+
         [Test]
         public async Task GetPlans_ShouldReturnOk_WithMappedData()
         {
@@ -47,33 +52,49 @@ namespace MembershipService.Api.Tests.Controllers
                     }
                 }
             };
+
             _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtoList);
-            var result = await _controller.GetPlans();
-            var ok = result as OkObjectResult;
+
+            var actionResult = await _controller.GetPlans();
+            var ok = actionResult.Result as OkObjectResult;
+
             Assert.That(ok, Is.Not.Null);
-            var subs = (List<SubscriptionResponse>)ok.Value.GetType().GetProperty("subscriptions").GetValue(ok.Value);
-            Assert.That(subs.Count, Is.EqualTo(1));
-            Assert.That(subs[0].PlanType, Is.EqualTo("MONTHLY"));
-            Assert.That(subs[0].Skus[0].SkuId, Is.EqualTo("111"));
+
+            var responseList = ok.Value as IEnumerable<SubscriptionResponse>;
+            Assert.That(responseList, Is.Not.Null);
+
+            var list = new List<SubscriptionResponse>(responseList);
+            Assert.That(list.Count, Is.EqualTo(1));
+            Assert.That(list[0].PlanType, Is.EqualTo("MONTHLY"));
+            Assert.That(list[0].Skus[0].SkuId, Is.EqualTo("111"));
         }
+
         [Test]
         public async Task GetPlans_ShouldReturnNotFound_WhenEmpty()
         {
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(new List<SubscriptionDto>());
-            var result = await _controller.GetPlans();
-            Assert.That(result, Is.TypeOf<NotFoundObjectResult>());
+            _serviceMock.Setup(s => s.GetAllAsync())
+                        .ReturnsAsync(new List<SubscriptionDto>());
+
+            var actionResult = await _controller.GetPlans();
+            Assert.That(actionResult.Result, Is.TypeOf<NotFoundObjectResult>());
         }
+
         [Test]
         public async Task GetPlans_ShouldReturnNotFound_WhenNull()
         {
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync((IEnumerable<SubscriptionDto>)null);
-            var result = await _controller.GetPlans();
-            Assert.That(result, Is.TypeOf<NotFoundObjectResult>());
+            _serviceMock.Setup(s => s.GetAllAsync())
+                        .ReturnsAsync((IEnumerable<SubscriptionDto>)null);
+
+            var actionResult = await _controller.GetPlans();
+            Assert.That(actionResult.Result, Is.TypeOf<NotFoundObjectResult>());
         }
+
         [Test]
         public void GetPlans_ShouldThrowException_WhenServiceFails()
         {
-            _serviceMock.Setup(s => s.GetAllAsync()).ThrowsAsync(new Exception("error"));
+            _serviceMock.Setup(s => s.GetAllAsync())
+                        .ThrowsAsync(new Exception("error"));
+
             Assert.ThrowsAsync<Exception>(() => _controller.GetPlans());
         }
     }

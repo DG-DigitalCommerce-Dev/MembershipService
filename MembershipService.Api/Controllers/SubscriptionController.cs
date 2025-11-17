@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
-using MembershipService.Application.Common.Interfaces;
 using MembershipService.Api.Models;
+using MembershipService.Application.Common.Interfaces;
 using MembershipService.Domain.Constants;
 using Microsoft.AspNetCore.Mvc;
+
 namespace MembershipService.Api.Controllers
 {
     [ApiController]
@@ -12,23 +13,26 @@ namespace MembershipService.Api.Controllers
         private readonly ISubscriptionService _service;
         private readonly ILogger<SubscriptionController> _logger;
         private readonly IMapper _mapper;
+
         public SubscriptionController(ISubscriptionService service, ILogger<SubscriptionController> logger, IMapper mapper)
         {
             _service = service;
             _logger = logger;
             _mapper = mapper;
         }
+
         [HttpGet("plans")]
-        public async Task<IActionResult> GetPlans()
+        public async Task<ActionResult<IEnumerable<SubscriptionResponse>>> GetPlans()
         {
             _logger.LogInformation(LogMessages.RequestReceived);
-            var dtoList = await _service.GetAllAsync();
-            if (dtoList == null || !dtoList.Any())
-                return NotFound(new { subscriptions = new List<SubscriptionResponse>() });
+            var result = await _service.GetAllAsync();
 
-            var response = _mapper.Map<List<SubscriptionResponse>>(dtoList);
+            if (result == null || !result.Any())
+                return NotFound("No subscriptions found.");
+
+            var response = _mapper.Map<IEnumerable<SubscriptionResponse>>(result);
             _logger.LogInformation(LogMessages.SendingResponse);
-            return Ok(new { subscriptions = response });
+            return Ok(response);
         }
     }
 }

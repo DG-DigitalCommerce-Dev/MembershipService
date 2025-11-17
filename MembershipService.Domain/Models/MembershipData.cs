@@ -91,8 +91,8 @@ namespace MembershipService.Domain.Models
         public bool IsSkipped { get; set; }
         public string Status { get; set; }
         public int CycleCount { get; set; }
-        public decimal PriceAtSubscriptionDate { get; set; } // Use decimal for money
-        public decimal ManualPrice { get; set; } // Use decimal for money
+        public decimal PriceAtSubscriptionDate { get; set; } 
+        public decimal ManualPrice { get; set; } 
         public List<AttachmentData> Attachments { get; set; }
         public string OriginalOrderId { get; set; }
     }

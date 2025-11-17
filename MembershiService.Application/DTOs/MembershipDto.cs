@@ -7,11 +7,19 @@ using MembershipService.Domain.Models;
 
 namespace MembershipService.Application.DTOs
 {
-    public record MembershipResponseDto(
-        IEnumerable<MembershipDto> Memberships,
-        int TotalCount,
-        int PageCount
-    );
+    public class MembershipResponseDto
+    {
+        public MembershipResponseDto(IEnumerable<MembershipDto> memberships, int totalCount, int pageCount)
+        {
+            Memberships = memberships;
+            TotalCount = totalCount;
+            PageCount = pageCount;
+        }
+
+        public IEnumerable<MembershipDto> Memberships { get; set; }
+        public int TotalCount { get; set; }
+        public int PageCount { get; set; }
+    }
     public class MembershipDto
     {
         [Required]
@@ -91,7 +99,7 @@ namespace MembershipService.Application.DTOs
         public string Status { get; set; }
         public int CycleCount { get; set; }
         public decimal PriceAtSubscriptionDate { get; set; }
-        public decimal ManualPrice { get; set; } 
+        public decimal ManualPrice { get; set; }
         public List<AttachmentDto> AttachmentDtos { get; set; }
         public string OriginalOrderId { get; set; }
     }

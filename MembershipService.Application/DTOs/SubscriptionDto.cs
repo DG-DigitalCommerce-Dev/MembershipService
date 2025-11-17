@@ -6,7 +6,6 @@
         public string Frequency { get; set; } = string.Empty;
         public List<SkuDto> Skus { get; set; } = new();
     }
-
     public class SkuDto
     {
         public string SkuId { get; set; } = string.Empty;

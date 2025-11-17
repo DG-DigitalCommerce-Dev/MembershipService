@@ -1,13 +1,12 @@
-﻿namespace MembershipService.Application.Models
+﻿namespace MembershipService.Api.Models
 {
-    public class SubscriptionResponseModel
+    public class SubscriptionResponse
     {
         public string PlanType { get; set; }
         public string Frequency { get; set; }
-        public List<SkuResponseModel> Skus { get; set; }
+        public List<SkuResponse> Skus { get; set; }
     }
-
-    public class SkuResponseModel
+    public class SkuResponse
     {
         public string SkuId { get; set; }
         public decimal? Price { get; set; }

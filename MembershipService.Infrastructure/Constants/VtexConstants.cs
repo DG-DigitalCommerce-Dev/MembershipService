@@ -7,7 +7,6 @@
 
         public const string AcceptHeader = "Accept";
         public const string AcceptHeaderValue = "application/json";
-
         public const string ContentTypeJson = "application/json";
     }
 }

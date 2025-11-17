@@ -1,7 +1,4 @@
-﻿using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-namespace MembershipService.Infrastructure.Tests.TestUtils;
+﻿namespace MembershipService.Infrastructure.Tests.TestUtils;
 public class MockHttpMessageHandler : HttpMessageHandler
 {
     private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;

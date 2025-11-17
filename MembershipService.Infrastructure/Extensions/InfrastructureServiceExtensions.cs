@@ -1,10 +1,10 @@
-﻿using MembershipService.Infrastructure.Integrations;
+﻿using MembershipService.Domain.Models;
+using MembershipService.Infrastructure.Integrations;
 using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
-
 namespace MembershipService.Infrastructure.Extensions
 {
     public static class InfrastructureServiceExtensions
@@ -15,10 +15,8 @@ namespace MembershipService.Infrastructure.Extensions
 
             services.AddHttpClient<IVtexSubscriptionClient, VtexSubscriptionClient>()
                     .AddPolicyHandler(GetRetryPolicy());
-
             return services;
         }
-
         private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
         {
             return HttpPolicyExtensions

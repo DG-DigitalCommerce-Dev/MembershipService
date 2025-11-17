@@ -19,5 +19,9 @@
     <ProjectReference Include="..\MembershipService.Application\MembershipService.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Mock\" />
+  </ItemGroup>
+
 </Project>
 

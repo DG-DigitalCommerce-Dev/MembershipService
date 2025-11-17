@@ -6,11 +6,18 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 namespace MembershipService.Domain.Models
 {
-    public record VtexMembershipResponse(
-        IEnumerable<MembershipData> Memberships,
-        int TotalCount,
-        int PageCount
-    );
+    public class VtexMembershipResponse
+    {
+        public VtexMembershipResponse(IEnumerable<MembershipData> memberships, int totalCount, int pageCount)
+        {
+            Memberships = memberships;
+            TotalCount = totalCount;
+            PageCount = pageCount;
+        }
+        public IEnumerable<MembershipData> Memberships { get; set; }
+        public int TotalCount { get; set; }
+        public int PageCount { get; set; }
+    }
     public class MembershipData
     {
         [JsonPropertyName("id")]

@@ -11,5 +11,4 @@ namespace MembershipService.Infrastructure.Interfaces
     {
         Task<VtexMembershipResponse> GetActiveMembershipData(int page);
     }
-
 }

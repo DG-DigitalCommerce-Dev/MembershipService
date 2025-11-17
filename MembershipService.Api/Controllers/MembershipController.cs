@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using MembershipService.Application.Common.Models;
+using MembershipService.Api.Models;
 using MembershipService.Application.Common.Interfaces;
 using MembershipService.Domain.Constants;
 using MembershipService.Domain.Models;

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MembershipService.Application.Common.Interfaces;
-using MembershipService.Application.Common.Models;
 using MembershipService.Application.DTOs;
 using MembershipService.Domain.Constants;
 using MembershipService.Domain.Models;
@@ -26,7 +25,6 @@ namespace MembershipService.Application.Services
             _vtexMembershipRepository = vtexMembershipRepository;
             _mapper = mapper;
         }
-
         public async Task<MembershipResponseDto> GetActiveMembershipData(int page)
         {
             _logger.LogInformation(LogMessageConstants.requestingMembershipData);

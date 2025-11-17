@@ -12,6 +12,5 @@ namespace MembershipService.Infrastructure.Constants
         public static string apiKeyHeader = "X-VTEX-API-AppKey";
         public static string acceptHeader = "Accept";
         public static string acceptHeaderValue = "application/json";
-
     }
 }

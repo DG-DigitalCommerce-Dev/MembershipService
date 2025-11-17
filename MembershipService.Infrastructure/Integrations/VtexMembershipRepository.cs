@@ -13,7 +13,6 @@ using MembershipService.Domain.Constants;
 
 namespace MembershipService.Infrastructure.Integrations
 {
-
     public class VtexMembershipRepository : IVtexMembershipRepository
     {
         private readonly HttpClient _httpClient;

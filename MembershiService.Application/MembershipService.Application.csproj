@@ -9,6 +9,7 @@
   <ItemGroup>
     <Folder Include="Common\Enum\" />
     <Folder Include="Common\Exceptions\" />
+    <Folder Include="Common\Models\" />
     <Folder Include="Extensions\" />
   </ItemGroup>
 

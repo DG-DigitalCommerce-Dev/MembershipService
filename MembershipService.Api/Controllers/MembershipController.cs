@@ -30,15 +30,14 @@ namespace MembershipService.Api.Controllers
         {
             _logger.LogInformation(LogMessageConstants.processingMembershipInfoEndpoint);
             if (page < 1)
-            {
                 return BadRequest("Page value should be greater than 0");
-            }
-            var result = await _membershipDataService.GetActiveMembershipData(page);
 
+            var result = await _membershipDataService.GetActiveMembershipData(page);
+            if (result == null) 
+                return StatusCode(StatusCodes.Status500InternalServerError,"An unexpected error occurred");
             if (result.Memberships == null || !result.Memberships.Any()) 
-            {
                 return NotFound("No subscriptions found.");
-            }
+
             var membershipModels = _mapper.Map<IEnumerable<MembershipResponse>>(result.Memberships);
 
             return Ok(new PaginatedMembershipResponse(membershipModels,result.TotalCount));

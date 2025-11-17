@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -41,11 +40,9 @@ namespace MembershipService.Infrastructure.Integrations
                     return null;
                 }
                 response.Headers.TryGetValues("X-Total-Count", out IEnumerable<string>? totalValues);
-                response.Headers.TryGetValues("X-Page-Count", out IEnumerable<string>? pageValues);
                 int.TryParse(totalValues?.FirstOrDefault(), out int totalCount);
-                int.TryParse(pageValues?.FirstOrDefault(), out int pageCount);
                 var membershipDataList = await response.Content.ReadFromJsonAsync<List<MembershipData>>();
-                return new VtexMembershipResponse(membershipDataList, totalCount, pageCount); 
+                return new VtexMembershipResponse(membershipDataList, totalCount); 
             } 
             catch (Exception ex)
             {

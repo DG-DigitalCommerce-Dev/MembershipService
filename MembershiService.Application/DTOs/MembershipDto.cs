@@ -9,16 +9,14 @@ namespace MembershipService.Application.DTOs
 {
     public class MembershipResponseDto
     {
-        public MembershipResponseDto(IEnumerable<MembershipDto> memberships, int totalCount, int pageCount)
+        public MembershipResponseDto(IEnumerable<MembershipDto> memberships, int totalCount)
         {
             Memberships = memberships;
             TotalCount = totalCount;
-            PageCount = pageCount;
         }
 
         public IEnumerable<MembershipDto> Memberships { get; set; }
         public int TotalCount { get; set; }
-        public int PageCount { get; set; }
     }
     public class MembershipDto
     {

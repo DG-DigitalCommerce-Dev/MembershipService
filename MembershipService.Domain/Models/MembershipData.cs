@@ -7,11 +7,10 @@ namespace MembershipService.Domain.Models
 {
     public class VtexMembershipResponse
     {
-        public VtexMembershipResponse(IEnumerable<MembershipData> memberships, int totalCount, int pageCount)
+        public VtexMembershipResponse(IEnumerable<MembershipData> memberships, int totalCount)
         {
             Memberships = memberships;
             TotalCount = totalCount;
-            PageCount = pageCount;
         }
 
         public IEnumerable<MembershipData> Memberships { get; set; }

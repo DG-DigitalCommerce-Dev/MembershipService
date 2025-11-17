@@ -41,7 +41,7 @@ namespace MembershipService.Api.Controllers
             }
             var membershipModels = _mapper.Map<IEnumerable<MembershipResponse>>(result.Memberships);
 
-            return Ok(new PaginatedMembershipResponse(membershipModels,result.TotalCount,result.PageCount));
+            return Ok(new PaginatedMembershipResponse(membershipModels,result.TotalCount));
         }
     }
 }

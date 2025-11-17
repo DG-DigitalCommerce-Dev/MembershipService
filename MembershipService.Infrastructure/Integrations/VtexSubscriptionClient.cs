@@ -28,6 +28,7 @@ namespace MembershipService.Infrastructure.Integrations
             _pricingClient.BaseAddress = new Uri($"{_settings.PricingBaseUrl.TrimEnd('/')}/");
             ApplyDefaultHeaders(_pricingClient);
         }
+
         private void ApplyDefaultHeaders(HttpClient client)
         {
             client.DefaultRequestHeaders.Add(VtexConstants.AppKeyHeader, _settings.AppKey);
@@ -38,29 +39,26 @@ namespace MembershipService.Infrastructure.Integrations
         {
             try
             {
-                var plans = new List<SubscriptionPlan>();
-                foreach (var refItem in _settings.SubscriptionRefs)
+                var planTasks = _settings.SubscriptionRefs.Select(async refItem =>
                 {
-                    _logger.LogInformation(LogMessages.FetchProduct, refItem.RefId);
                     var productJson = await FetchProduct(refItem.RefId);
-                    if (productJson is null) continue;
+                    if (productJson is null) return null;
                     var skuIds = ExtractSkuIds(productJson.Value);
-                    var plan = new SubscriptionPlan
+                    if (skuIds.Count == 0) return null;
+                    var skuTasks = skuIds.Select(skuId => BuildSku(skuId, productJson.Value));
+                    var skuResults = await Task.WhenAll(skuTasks);
+                    var validSkus = skuResults.Where(s => s != null).ToList();
+                    if (validSkus.Count == 0) return null;
+                    return new SubscriptionPlan
                     {
                         PlanType = refItem.PlanType,
-                        Frequency = refItem.Frequency
+                        Frequency = refItem.Frequency,
+                        Skus = validSkus
                     };
-                    foreach (var skuId in skuIds)
-                    {
-                        _logger.LogInformation(LogMessages.FetchPrice, skuId);
-                        var sku = await BuildSku(skuId, productJson.Value);
-                        if (sku != null)
-                            plan.Skus.Add(sku);
-                    }
-                    if (plan.Skus.Count > 0)
-                        plans.Add(plan);
-                }
-                return new SubscriptionResponse { Subscriptions = plans };
+                });
+                var planResults = await Task.WhenAll(planTasks);
+                var finalPlans = planResults.Where(p => p != null).ToList()!;
+                return new SubscriptionResponse { Subscriptions = finalPlans };
             }
             catch (Exception ex)
             {
@@ -72,6 +70,7 @@ namespace MembershipService.Infrastructure.Integrations
                 };
             }
         }
+
         private async Task<JsonElement?> FetchProduct(string refId)
         {
             try
@@ -88,6 +87,7 @@ namespace MembershipService.Infrastructure.Integrations
                 return null;
             }
         }
+
         private List<string> ExtractSkuIds(JsonElement product)
         {
             var skuIds = new List<string>();
@@ -107,6 +107,7 @@ namespace MembershipService.Infrastructure.Integrations
             }
             return skuIds;
         }
+
         private async Task<Sku?> BuildSku(string skuId, JsonElement productJson)
         {
             try
@@ -137,6 +138,7 @@ namespace MembershipService.Infrastructure.Integrations
                 return null;
             }
         }
+
         private async Task<JsonElement?> FetchSkuPrice(string skuId)
         {
             try

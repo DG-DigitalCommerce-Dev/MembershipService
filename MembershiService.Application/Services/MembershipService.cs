@@ -37,8 +37,8 @@ namespace MembershipService.Application.Services
 
             _logger.LogInformation(LogMessageConstants.membershipInfoReceived);
             
-            var membershipDtos = _mapper.Map<IEnumerable<MembershipDto>>(result.Memberships);
-            return new MembershipResponseDto(membershipDtos, result.TotalCount, result.PageCount);
+            var membershipDtoList = _mapper.Map<IEnumerable<MembershipDto>>(result.Memberships);
+            return new MembershipResponseDto(membershipDtoList, result.TotalCount, result.PageCount);
         }
     }
 }

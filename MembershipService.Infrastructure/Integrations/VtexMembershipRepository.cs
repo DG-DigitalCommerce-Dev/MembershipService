@@ -44,8 +44,8 @@ namespace MembershipService.Infrastructure.Integrations
                 response.Headers.TryGetValues("X-Page-Count", out IEnumerable<string>? pageValues);
                 int.TryParse(totalValues?.FirstOrDefault(), out int totalCount);
                 int.TryParse(pageValues?.FirstOrDefault(), out int pageCount);
-                var membershipData = await response.Content.ReadFromJsonAsync<List<MembershipData>>(); 
-                return new VtexMembershipResponse(membershipData, totalCount, pageCount); 
+                var membershipDataList = await response.Content.ReadFromJsonAsync<List<MembershipData>>();
+                return new VtexMembershipResponse(membershipDataList, totalCount, pageCount); 
             } 
             catch (Exception ex)
             {

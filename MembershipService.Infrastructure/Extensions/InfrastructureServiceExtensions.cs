@@ -7,7 +7,6 @@ using Polly;
 using Polly.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-
 namespace MembershipService.Infrastructure.Extensions
 {
     public static class InfrastructureServiceExtensions

@@ -25,7 +25,7 @@ namespace MembershipService.Api.Controllers
         }
 
         [HttpGet("skus")] 
-        public async Task<ActionResult<IEnumerable<MembershipResponse>>> GetActiveMembership([FromQuery] int page)
+        public async Task<ActionResult<IEnumerable<MembershipResponseData>>> GetActiveMembership([FromQuery] int page)
         {
             _logger.LogInformation(LogMessageConstants.ProcessingMembershipInfoEndpoint);
             if (page < 1)
@@ -38,8 +38,8 @@ namespace MembershipService.Api.Controllers
             if (result.MembershipList == null || !result.MembershipList.Any()) 
                 return NotFound("No subscriptions found.");
 
-            var membershipList = _mapper.Map<IEnumerable<MembershipResponse>>(result.MembershipList);
-            return Ok(new PaginatedMembershipResponse(membershipList, result.TotalCount));
+            var membershipList = _mapper.Map<IEnumerable<MembershipResponseData>>(result.MembershipList);
+            return Ok(new MembershipResponse(membershipList, result.TotalCount));
         }
     }
 }

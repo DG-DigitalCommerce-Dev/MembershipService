@@ -53,7 +53,7 @@ namespace MembershipService.Api.Tests
         {
             // Arrange
             int page = 1;
-            _mockMembershipDataService.Setup(s => s.GetActiveMembershipData(page)).ReturnsAsync((MembershipResponseDto)null);
+            _mockMembershipDataService.Setup(s => s.GetActiveMembershipData(page)).ReturnsAsync((MembershipDto)null);
 
             // Act
             var result = await _controller.GetActiveMembership(page);
@@ -70,7 +70,7 @@ namespace MembershipService.Api.Tests
         {
             // Arrange
             int page = 1;
-            var emptyServiceResult = new MembershipResponseDto(new List<MembershipDto>(), 0);
+            var emptyServiceResult = new MembershipDto(new List<MembershipDtoData>(), 0);
             _mockMembershipDataService.Setup(s => s.GetActiveMembershipData(page)).ReturnsAsync(emptyServiceResult);
 
             // Act
@@ -87,7 +87,7 @@ namespace MembershipService.Api.Tests
         {
             // Arrange
             int page = 1;
-            var nullListServiceResult = new MembershipResponseDto(null, 0);
+            var nullListServiceResult = new MembershipDto(null, 0);
             _mockMembershipDataService.Setup(s => s.GetActiveMembershipData(page)).ReturnsAsync(nullListServiceResult);
 
             // Act
@@ -103,21 +103,21 @@ namespace MembershipService.Api.Tests
             // Arrange
             int page = 1;
             int totalCount = 2;
-            var membershipDtoList = new List<MembershipDto>
+            var membershipDtoList = new List<MembershipDtoData>
             {
-                new MembershipDto { Id = "123", CustomerEmail = "test1@example.com" },
-                new MembershipDto { Id = "123", CustomerEmail = "test2@example.com" }
+                new MembershipDtoData { Id = "123", CustomerEmail = "test1@example.com" },
+                new MembershipDtoData { Id = "123", CustomerEmail = "test2@example.com" }
             };
-            var serviceResult = new MembershipResponseDto(membershipDtoList,totalCount);
+            var serviceResult = new MembershipDto(membershipDtoList,totalCount);
 
-            var mappedResponses = new List<MembershipResponse>
+            var mappedResponses = new List<MembershipResponseData>
             {
-                new MembershipResponse { Id = membershipDtoList[0].Id, CustomerEmail = membershipDtoList[0].CustomerEmail },
-                new MembershipResponse { Id = membershipDtoList[1].Id, CustomerEmail = membershipDtoList[1].CustomerEmail }
+                new MembershipResponseData { Id = membershipDtoList[0].Id, CustomerEmail = membershipDtoList[0].CustomerEmail },
+                new MembershipResponseData { Id = membershipDtoList[1].Id, CustomerEmail = membershipDtoList[1].CustomerEmail }
             };
 
             _mockMembershipDataService.Setup(s => s.GetActiveMembershipData(page)).ReturnsAsync(serviceResult);
-            _mockMapper.Setup(m => m.Map<IEnumerable<MembershipResponse>>(membershipDtoList)).Returns(mappedResponses);
+            _mockMapper.Setup(m => m.Map<IEnumerable<MembershipResponseData>>(membershipDtoList)).Returns(mappedResponses);
 
             // Act
             var result = await _controller.GetActiveMembership(page);
@@ -125,8 +125,8 @@ namespace MembershipService.Api.Tests
             // Assert
             Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
             var okResult = result.Result as OkObjectResult;
-            Assert.That(okResult.Value, Is.InstanceOf<PaginatedMembershipResponse>());
-            var paginatedResponse = okResult.Value as PaginatedMembershipResponse;
+            Assert.That(okResult.Value, Is.InstanceOf<MembershipResponse>());
+            var paginatedResponse = okResult.Value as MembershipResponse;
             Assert.Multiple(() =>
             {
                 Assert.That(paginatedResponse.TotalCount, Is.EqualTo(totalCount));

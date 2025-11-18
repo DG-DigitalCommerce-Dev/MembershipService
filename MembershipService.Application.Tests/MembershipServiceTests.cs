@@ -58,22 +58,22 @@ namespace MembershipService.Application.Tests
             };
             var repoResult = new VtexMembershipResponse(membershipDataList, totalCount);
 
-            var mappedDtos = new List<MembershipDto>
+            var mappedDtos = new List<MembershipDtoData>
             {
-                new MembershipDto { Id = membershipDataList[0].Id, CustomerEmail = membershipDataList[0].CustomerEmail },
-                new MembershipDto { Id = membershipDataList[1].Id, CustomerEmail = membershipDataList[1].CustomerEmail}
+                new MembershipDtoData { Id = membershipDataList[0].Id, CustomerEmail = membershipDataList[0].CustomerEmail },
+                new MembershipDtoData { Id = membershipDataList[1].Id, CustomerEmail = membershipDataList[1].CustomerEmail}
             };
 
             _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipData(page)).ReturnsAsync(repoResult);
 
-            _mockMapper.Setup(m => m.Map<IEnumerable<MembershipDto>>(membershipDataList)).Returns(mappedDtos);
+            _mockMapper.Setup(m => m.Map<IEnumerable<MembershipDtoData>>(membershipDataList)).Returns(mappedDtos);
 
             // Act
             var result = await _service.GetActiveMembershipData(page);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result, Is.InstanceOf<MembershipResponseDto>());
+            Assert.That(result, Is.InstanceOf<MembershipDto>());
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCount, Is.EqualTo(totalCount));
@@ -82,7 +82,7 @@ namespace MembershipService.Application.Tests
             });
 
             _mockVtexMembershipRepository.Verify(repo => repo.GetActiveMembershipData(page), Times.Once);
-            _mockMapper.Verify(m => m.Map<IEnumerable<MembershipDto>>(membershipDataList), Times.Once);
+            _mockMapper.Verify(m => m.Map<IEnumerable<MembershipDtoData>>(membershipDataList), Times.Once);
         }
 
         [Test]
@@ -93,10 +93,10 @@ namespace MembershipService.Application.Tests
             int totalCount = 0;
             var membershipDataList = new List<MembershipData>();
             var repoResult = new VtexMembershipResponse(membershipDataList,totalCount);
-            var membershipDtoList = new List<MembershipDto>();
+            var membershipDtoList = new List<MembershipDtoData>();
 
             _mockVtexMembershipRepository.Setup(repo => repo.GetActiveMembershipData(page)).ReturnsAsync(repoResult);
-            _mockMapper.Setup(m => m.Map<IEnumerable<MembershipDto>>(membershipDataList)).Returns(membershipDtoList);
+            _mockMapper.Setup(m => m.Map<IEnumerable<MembershipDtoData>>(membershipDataList)).Returns(membershipDtoList);
 
             // Act
             var result = await _service.GetActiveMembershipData(page);

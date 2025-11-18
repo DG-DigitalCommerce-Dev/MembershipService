@@ -8,7 +8,7 @@ namespace MembershipService.Api.Mapping
     {
         public DtoToResponseProfile()
         {
-            CreateMap<MembershipDto, MembershipResponse>()
+            CreateMap<MembershipDtoData, MembershipResponseData>()
                 .ForMember(dest => dest.Plan, opt => opt.MapFrom(src => src.PlanDto))
                 .ForMember(dest => dest.ShippingAddress, opt => opt.MapFrom(src => src.ShippingAddressDto))
                 .ForMember(dest => dest.PurchaseSettings, opt => opt.MapFrom(src => src.PurchaseSettingsDto))

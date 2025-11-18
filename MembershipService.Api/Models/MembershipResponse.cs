@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace MembershipService.Api.Models
 {
-    public class PaginatedMembershipResponse
+    public class MembershipResponse
     {
-        public PaginatedMembershipResponse(IEnumerable<MembershipResponse> memberships, int totalCount)
+        public MembershipResponse(IEnumerable<MembershipResponseData> membershipList, int totalCount)
         {
-            MembershipList = memberships;
+            MembershipList = membershipList;
             TotalCount = totalCount;
         }
 
-        public IEnumerable<MembershipResponse> MembershipList { get; set; }
+        public IEnumerable<MembershipResponseData> MembershipList { get; set; }
         public int TotalCount { get; set; }
     }
-    public class MembershipResponse
+    public class MembershipResponseData
     {
         public string Id { get; set; }
         public string CustomerId { get; set; }

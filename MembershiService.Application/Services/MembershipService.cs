@@ -25,7 +25,7 @@ namespace MembershipService.Application.Services
             _vtexMembershipRepository = vtexMembershipRepository;
             _mapper = mapper;
         }
-        public async Task<MembershipResponseDto> GetActiveMembershipData(int page)
+        public async Task<MembershipDto> GetActiveMembershipData(int page)
         {
             _logger.LogInformation(LogMessageConstants.RequestingMembershipData);
             var result = await _vtexMembershipRepository.GetActiveMembershipData(page);
@@ -37,8 +37,8 @@ namespace MembershipService.Application.Services
 
             _logger.LogInformation(LogMessageConstants.MembershipInfoReceived);
             
-            var membershipDtoList = _mapper.Map<IEnumerable<MembershipDto>>(result.MembershipList);
-            return new MembershipResponseDto(membershipDtoList, result.TotalCount);
+            var membershipDtoList = _mapper.Map<IEnumerable<MembershipDtoData>>(result.MembershipList);
+            return new MembershipDto(membershipDtoList, result.TotalCount);
         }
     }
 }

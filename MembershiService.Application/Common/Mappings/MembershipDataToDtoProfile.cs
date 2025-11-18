@@ -13,7 +13,7 @@ namespace MembershipService.Application.Common.Mappings
     {
         public MembershipDataToDtoProfile()
         {
-            CreateMap<MembershipData, MembershipDto>()
+            CreateMap<MembershipData, MembershipDtoData>()
                 .ForMember(dest => dest.PlanDto, opt => opt.MapFrom(src => src.Plan))
                 .ForMember(dest => dest.ShippingAddressDto, opt => opt.MapFrom(src => src.ShippingAddress))
                 .ForMember(dest => dest.PurchaseSettingsDto, opt => opt.MapFrom(src => src.PurchaseSettings))

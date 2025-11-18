@@ -7,18 +7,18 @@ using MembershipService.Domain.Models;
 
 namespace MembershipService.Application.DTOs
 {
-    public class MembershipResponseDto
+    public class MembershipDto
     {
-        public MembershipResponseDto(IEnumerable<MembershipDto> memberships, int totalCount)
+        public MembershipDto(IEnumerable<MembershipDtoData> memberships, int totalCount)
         {
             MembershipList = memberships;
             TotalCount = totalCount;
         }
 
-        public IEnumerable<MembershipDto> MembershipList { get; set; }
+        public IEnumerable<MembershipDtoData> MembershipList { get; set; }
         public int TotalCount { get; set; }
     }
-    public class MembershipDto
+    public class MembershipDtoData
     {
         [Required]
         public string Id { get; set; }

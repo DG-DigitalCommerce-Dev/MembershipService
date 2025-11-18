@@ -7,9 +7,9 @@ namespace MembershipService.Domain.Models
 {
     public class VtexMembershipResponse
     {
-        public VtexMembershipResponse(IEnumerable<MembershipData> memberships, int totalCount)
+        public VtexMembershipResponse(IEnumerable<MembershipData> membershipList, int totalCount)
         {
-            MembershipList = memberships;
+            MembershipList = membershipList;
             TotalCount = totalCount;
         }
 

@@ -11,11 +11,11 @@ namespace MembershipService.Application.DTOs
     {
         public MembershipResponseDto(IEnumerable<MembershipDto> memberships, int totalCount)
         {
-            Memberships = memberships;
+            MembershipList = memberships;
             TotalCount = totalCount;
         }
 
-        public IEnumerable<MembershipDto> Memberships { get; set; }
+        public IEnumerable<MembershipDto> MembershipList { get; set; }
         public int TotalCount { get; set; }
     }
     public class MembershipDto

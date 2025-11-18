@@ -80,9 +80,9 @@ namespace MembershipService.Infrastructure.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Is.InstanceOf<VtexMembershipResponse>());
             Assert.That(result.TotalCount, Is.EqualTo(expectedTotalCount));
-            Assert.That(result.Memberships.Count(), Is.EqualTo(2));
-            Assert.That(result.Memberships.First().Id, Is.EqualTo("123"));
-            Assert.That(result.Memberships.First().CustomerEmail, Is.EqualTo("test1@email.com"));
+            Assert.That(result.MembershipList.Count(), Is.EqualTo(2));
+            Assert.That(result.MembershipList.First().Id, Is.EqualTo("123"));
+            Assert.That(result.MembershipList.First().CustomerEmail, Is.EqualTo("test1@email.com"));
         }
 
         [Test]

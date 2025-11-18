@@ -10,11 +10,11 @@ namespace MembershipService.Api.Models
     {
         public PaginatedMembershipResponse(IEnumerable<MembershipResponse> memberships, int totalCount)
         {
-            Memberships = memberships;
+            MembershipList = memberships;
             TotalCount = totalCount;
         }
 
-        public IEnumerable<MembershipResponse> Memberships { get; set; }
+        public IEnumerable<MembershipResponse> MembershipList { get; set; }
         public int TotalCount { get; set; }
     }
     public class MembershipResponse

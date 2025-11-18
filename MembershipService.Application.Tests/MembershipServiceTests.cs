@@ -77,8 +77,8 @@ namespace MembershipService.Application.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCount, Is.EqualTo(totalCount));
-                Assert.That(result.Memberships, Is.SameAs(mappedDtos)); 
-                Assert.That(result.Memberships.Count(), Is.EqualTo(2));
+                Assert.That(result.MembershipList, Is.SameAs(mappedDtos)); 
+                Assert.That(result.MembershipList.Count(), Is.EqualTo(2));
             });
 
             _mockVtexMembershipRepository.Verify(repo => repo.GetActiveMembershipData(page), Times.Once);
@@ -106,9 +106,9 @@ namespace MembershipService.Application.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCount, Is.EqualTo(0));
-                Assert.That(result.Memberships, Is.Not.Null);
-                Assert.That(result.Memberships.Any(), Is.False);
-                Assert.That(result.Memberships, Is.SameAs(membershipDtoList));
+                Assert.That(result.MembershipList, Is.Not.Null);
+                Assert.That(result.MembershipList.Any(), Is.False);
+                Assert.That(result.MembershipList, Is.SameAs(membershipDtoList));
             });
         }
     }

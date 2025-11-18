@@ -37,7 +37,7 @@ namespace MembershipService.Application.Services
 
             _logger.LogInformation(LogMessageConstants.MembershipInfoReceived);
             
-            var membershipDtoList = _mapper.Map<IEnumerable<MembershipDto>>(result.Memberships);
+            var membershipDtoList = _mapper.Map<IEnumerable<MembershipDto>>(result.MembershipList);
             return new MembershipResponseDto(membershipDtoList, result.TotalCount);
         }
     }

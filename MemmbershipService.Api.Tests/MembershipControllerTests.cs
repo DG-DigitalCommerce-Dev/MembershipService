@@ -130,8 +130,8 @@ namespace MembershipService.Api.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(paginatedResponse.TotalCount, Is.EqualTo(totalCount));
-                Assert.That(paginatedResponse.Memberships.Count(), Is.EqualTo(2));
-                Assert.That(paginatedResponse.Memberships, Is.SameAs(mappedResponses));
+                Assert.That(paginatedResponse.MembershipList.Count(), Is.EqualTo(2));
+                Assert.That(paginatedResponse.MembershipList, Is.SameAs(mappedResponses));
             });
         }
     }

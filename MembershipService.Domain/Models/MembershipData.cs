@@ -9,11 +9,11 @@ namespace MembershipService.Domain.Models
     {
         public VtexMembershipResponse(IEnumerable<MembershipData> memberships, int totalCount)
         {
-            Memberships = memberships;
+            MembershipList = memberships;
             TotalCount = totalCount;
         }
 
-        public IEnumerable<MembershipData> Memberships { get; set; }
+        public IEnumerable<MembershipData> MembershipList { get; set; }
         public int TotalCount { get; set; }
     }
     public class MembershipData

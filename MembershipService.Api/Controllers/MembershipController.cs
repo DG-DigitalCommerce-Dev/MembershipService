@@ -35,11 +35,11 @@ namespace MembershipService.Api.Controllers
             if (result == null) 
                 return StatusCode(StatusCodes.Status500InternalServerError,"An unexpected error occurred");
 
-            if (result.Memberships == null || !result.Memberships.Any()) 
+            if (result.MembershipList == null || !result.MembershipList.Any()) 
                 return NotFound("No subscriptions found.");
 
-            var membershipResponseList = _mapper.Map<IEnumerable<MembershipResponse>>(result.Memberships);
-            return Ok(new PaginatedMembershipResponse(membershipResponseList, result.TotalCount));
+            var membershipList = _mapper.Map<IEnumerable<MembershipResponse>>(result.MembershipList);
+            return Ok(new PaginatedMembershipResponse(membershipList, result.TotalCount));
         }
     }
 }

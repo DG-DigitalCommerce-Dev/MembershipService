@@ -10,10 +10,10 @@ namespace MembershipService.Domain.Constants
 {
     public class LogMessageConstants
     {
-        public static string callingVtexMembershipApi = "Calling VTEX endpoint for Membership Information";
-        public static string errorOnVtexMembershipApi = "Unexpected Error when attempting to get membership information from VTEX endpoint";
-        public static string requestingMembershipData = "Attempting to get Membership information from VTEX endpoint";
-        public static string membershipInfoReceived = "Membership Information Received from VTEX endpoint";
-        public static string processingMembershipInfoEndpoint = "Start processing of api/Membership/skus end point";
+        public static string CallingVtexMembershipApi = "Calling VTEX endpoint for Membership Information";
+        public static string ErrorOnVtexMembershipApi = "Unexpected Error when attempting to get membership information from VTEX endpoint";
+        public static string RequestingMembershipData = "Attempting to get Membership information from VTEX endpoint";
+        public static string MembershipInfoReceived = "Membership Information Received from VTEX endpoint";
+        public static string ProcessingMembershipInfoEndpoint = "Start processing of api/Membership/skus end point";
     }
 }

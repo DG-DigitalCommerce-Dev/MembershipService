@@ -27,7 +27,7 @@ namespace MembershipService.Application.Services
         }
         public async Task<MembershipResponseDto> GetActiveMembershipData(int page)
         {
-            _logger.LogInformation(LogMessageConstants.requestingMembershipData);
+            _logger.LogInformation(LogMessageConstants.RequestingMembershipData);
             var result = await _vtexMembershipRepository.GetActiveMembershipData(page);
 
             if (result == null)
@@ -35,7 +35,7 @@ namespace MembershipService.Application.Services
                 return null;
             }
 
-            _logger.LogInformation(LogMessageConstants.membershipInfoReceived);
+            _logger.LogInformation(LogMessageConstants.MembershipInfoReceived);
             
             var membershipDtoList = _mapper.Map<IEnumerable<MembershipDto>>(result.Memberships);
             return new MembershipResponseDto(membershipDtoList, result.TotalCount);

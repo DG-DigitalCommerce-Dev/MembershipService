@@ -75,7 +75,7 @@ namespace MembershipService.Api.Models
 
     public class PaymentMethod
     {
-        public string? PaymentAccountId { get; set; }
+        public string PaymentAccountId { get; set; }
         public string PaymentSystem { get; set; }
         public int Installments { get; set; }
         public string PaymentSystemName { get; set; }

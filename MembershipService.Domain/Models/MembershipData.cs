@@ -15,7 +15,6 @@ namespace MembershipService.Domain.Models
 
         public IEnumerable<MembershipData> Memberships { get; set; }
         public int TotalCount { get; set; }
-        public int PageCount { get; set; }
     }
     public class MembershipData
     {
@@ -75,7 +74,7 @@ namespace MembershipService.Domain.Models
 
     public class PaymentMethodData
     {
-        public string? PaymentAccountId { get; set; }
+        public string PaymentAccountId { get; set; }
         public string PaymentSystem { get; set; }
         public int Installments { get; set; }
         public string PaymentSystemName { get; set; }

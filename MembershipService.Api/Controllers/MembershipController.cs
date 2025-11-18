@@ -8,7 +8,6 @@ using Microsoft.VisualBasic;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
 
-
 namespace MembershipService.Api.Controllers
 {
     [ApiController]
@@ -28,19 +27,19 @@ namespace MembershipService.Api.Controllers
         [HttpGet("skus")] 
         public async Task<ActionResult<IEnumerable<MembershipResponse>>> GetActiveMembership([FromQuery] int page)
         {
-            _logger.LogInformation(LogMessageConstants.processingMembershipInfoEndpoint);
+            _logger.LogInformation(LogMessageConstants.ProcessingMembershipInfoEndpoint);
             if (page < 1)
                 return BadRequest("Page value should be greater than 0");
 
             var result = await _membershipDataService.GetActiveMembershipData(page);
             if (result == null) 
                 return StatusCode(StatusCodes.Status500InternalServerError,"An unexpected error occurred");
+
             if (result.Memberships == null || !result.Memberships.Any()) 
                 return NotFound("No subscriptions found.");
 
-            var membershipModels = _mapper.Map<IEnumerable<MembershipResponse>>(result.Memberships);
-
-            return Ok(new PaginatedMembershipResponse(membershipModels,result.TotalCount));
+            var membershipResponseList = _mapper.Map<IEnumerable<MembershipResponse>>(result.Memberships);
+            return Ok(new PaginatedMembershipResponse(membershipResponseList, result.TotalCount));
         }
     }
 }

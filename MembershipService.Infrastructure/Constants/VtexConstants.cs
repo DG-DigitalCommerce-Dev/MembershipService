@@ -8,9 +8,9 @@ namespace MembershipService.Infrastructure.Constants
 {
     public class VtexConstants
     {
-        public static string appTokenHeader = "X-VTEX-API-AppToken";
-        public static string apiKeyHeader = "X-VTEX-API-AppKey";
-        public static string acceptHeader = "Accept";
-        public static string acceptHeaderValue = "application/json";
+        public static string AppTokenHeader = "X-VTEX-API-AppToken";
+        public static string ApiKeyHeader = "X-VTEX-API-AppKey";
+        public static string AcceptHeader = "Accept";
+        public static string AcceptHeaderValue = "application/json";
     }
 }

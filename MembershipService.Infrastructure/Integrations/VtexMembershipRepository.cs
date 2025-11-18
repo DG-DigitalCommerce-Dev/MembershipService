@@ -27,26 +27,26 @@ namespace MembershipService.Infrastructure.Integrations
         public async Task<VtexMembershipResponse> GetActiveMembershipData(int page)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["baseUrl"]}/api/rns/pub/subscriptions?status=ACTIVE&page={page}");
-            request.Headers.Add(VtexConstants.acceptHeader, VtexConstants.acceptHeaderValue); 
-            request.Headers.Add(VtexConstants.appTokenHeader, _config["vtexAppToken"]);
-            request.Headers.Add(VtexConstants.apiKeyHeader, _config["vtexApiKey"]);
+            request.Headers.Add(VtexConstants.AcceptHeader, VtexConstants.AcceptHeaderValue); 
+            request.Headers.Add(VtexConstants.AppTokenHeader, _config["vtexAppToken"]);
+            request.Headers.Add(VtexConstants.ApiKeyHeader, _config["vtexApiKey"]);
 
             try
             {
-                _logger.LogInformation(LogMessageConstants.callingVtexMembershipApi); 
+                _logger.LogInformation(LogMessageConstants.CallingVtexMembershipApi); 
                 var response = await _httpClient.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
                 }
                 response.Headers.TryGetValues("X-Total-Count", out IEnumerable<string>? totalValues);
-                int.TryParse(totalValues?.FirstOrDefault(), out int totalCount);
+                var totalCount = int.Parse(totalValues.FirstOrDefault());
                 var membershipDataList = await response.Content.ReadFromJsonAsync<List<MembershipData>>();
                 return new VtexMembershipResponse(membershipDataList, totalCount); 
             } 
             catch (Exception ex)
             {
-                _logger.LogError(ex, LogMessageConstants.errorOnVtexMembershipApi);
+                _logger.LogError(ex, LogMessageConstants.ErrorOnVtexMembershipApi);
                 return null;
             }
         }            

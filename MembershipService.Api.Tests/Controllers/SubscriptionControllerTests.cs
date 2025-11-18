@@ -53,7 +53,7 @@ namespace MembershipService.Api.Tests.Controllers
                 }
             };
 
-            _serviceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtoList);
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync()).ReturnsAsync(dtoList);
 
             var actionResult = await _controller.GetPlans();
             var ok = actionResult.Result as OkObjectResult;
@@ -72,7 +72,7 @@ namespace MembershipService.Api.Tests.Controllers
         [Test]
         public async Task GetPlans_ShouldReturnNotFound_WhenEmpty()
         {
-            _serviceMock.Setup(s => s.GetAllAsync())
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync())
                         .ReturnsAsync(new List<SubscriptionDto>());
 
             var actionResult = await _controller.GetPlans();
@@ -82,7 +82,7 @@ namespace MembershipService.Api.Tests.Controllers
         [Test]
         public async Task GetPlans_ShouldReturnNotFound_WhenNull()
         {
-            _serviceMock.Setup(s => s.GetAllAsync())
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync())
                         .ReturnsAsync((IEnumerable<SubscriptionDto>)null);
 
             var actionResult = await _controller.GetPlans();
@@ -92,7 +92,7 @@ namespace MembershipService.Api.Tests.Controllers
         [Test]
         public void GetPlans_ShouldThrowException_WhenServiceFails()
         {
-            _serviceMock.Setup(s => s.GetAllAsync())
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync())
                         .ThrowsAsync(new Exception("error"));
 
             Assert.ThrowsAsync<Exception>(() => _controller.GetPlans());

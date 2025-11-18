@@ -41,7 +41,7 @@ public class SubscriptionServiceTests
                     Frequency = "1 month",
                     Skus = new List<Sku>
                     {
-                        new Sku { SkuId = "111", Price = 200, Status = "ACTIVE", StockAvailable = true }
+                        new Sku { SkuId = "111", Price = 200, Status = "ACTIVE", IsStockAvailable = true }
                     }
                 }
             }
@@ -49,7 +49,7 @@ public class SubscriptionServiceTests
 
         _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync()).ReturnsAsync(domainResponse);
 
-        var result = await _service.GetAllAsync();
+        var result = await _service.GetAllSubscriptionsAsync();
         var list = new List<SubscriptionDto>(result);
         Assert.That(list.Count, Is.EqualTo(1));
         Assert.That(list[0].PlanType, Is.EqualTo("MONTHLY"));
@@ -60,20 +60,20 @@ public class SubscriptionServiceTests
     {
         _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync())
             .ReturnsAsync(new Subscription { Subscriptions = new List<SubscriptionPlan>() });
-        var result = await _service.GetAllAsync();
+        var result = await _service.GetAllSubscriptionsAsync();
         Assert.That(result, Is.Empty);
     }
     [Test]
     public async Task ReturnsEmptyWhenNull()
     {
         _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync()).ReturnsAsync((Subscription)null);
-        var result = await _service.GetAllAsync();
+        var result = await _service.GetAllSubscriptionsAsync();
         Assert.That(result, Is.Empty);
     }
     [Test]
     public void ThrowsWhenClientFails()
     {
         _vtexClientMock.Setup(x => x.GetSubscriptionPlansAsync()).ThrowsAsync(new Exception("error"));
-        Assert.ThrowsAsync<Exception>(() => _service.GetAllAsync());
+        Assert.ThrowsAsync<Exception>(() => _service.GetAllSubscriptionsAsync());
     }
 }

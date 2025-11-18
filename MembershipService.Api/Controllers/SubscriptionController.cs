@@ -25,7 +25,7 @@ namespace MembershipService.Api.Controllers
         public async Task<ActionResult<IEnumerable<SubscriptionResponse>>> GetPlans()
         {
             _logger.LogInformation(LogMessages.RequestReceived);
-            var result = await _service.GetAllAsync();
+            var result = await _service.GetAllSubscriptionsAsync();
 
             if (result == null || !result.Any())
                 return NotFound("No subscriptions found.");

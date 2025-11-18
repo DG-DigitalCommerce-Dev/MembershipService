@@ -17,18 +17,17 @@ namespace MembershipService.Application.Services
             _logger = logger;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<SubscriptionDto>> GetAllAsync()
+        public async Task<IEnumerable<SubscriptionDto>> GetAllSubscriptionsAsync()
         {
             _logger.LogInformation(LogMessages.FetchingFromVtex);
-            var domainResponse = await _vtexClient.GetSubscriptionPlansAsync();
-            if (domainResponse == null || domainResponse.Subscriptions.Count == 0)
+            var subscriptionresponse = await _vtexClient.GetSubscriptionPlansAsync();
+            if (subscriptionresponse == null || subscriptionresponse.Subscriptions.Count == 0)
             {
-                _logger.LogWarning(LogMessages.NoSubscriptionsFound);
                 return Enumerable.Empty<SubscriptionDto>();
             }
             _logger.LogInformation(LogMessages.TransformingToDto);
-            var SubscriptiondtoList = _mapper.Map<List<SubscriptionDto>>(domainResponse.Subscriptions);
-            return SubscriptiondtoList;
+            var subscriptionList = _mapper.Map<List<SubscriptionDto>>(subscriptionresponse.Subscriptions);
+            return subscriptionList;
         }
     }
 }

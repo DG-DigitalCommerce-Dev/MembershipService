@@ -13,10 +13,7 @@ namespace MembershipService.Infrastructure.Integrations
         private readonly HttpClient _pricingClient;
         private readonly ILogger<VtexSubscriptionClient> _logger;
         private readonly VtexApiSettings _settings;
-        public VtexSubscriptionClient(
-            HttpClient httpClient,
-            IOptions<VtexApiSettings> options,
-            ILogger<VtexSubscriptionClient> logger)
+        public VtexSubscriptionClient(HttpClient httpClient,IOptions<VtexApiSettings> options,ILogger<VtexSubscriptionClient> logger)
         {
             _settings = options.Value;
             _logger = logger;
@@ -62,11 +59,7 @@ namespace MembershipService.Infrastructure.Integrations
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.VtexFetchError);
-                return new Subscription
-                {
-                    Subscriptions = new List<SubscriptionPlan>(),
-                    Error = ex.Message
-                };
+               return null;
             }
         }
 
@@ -128,7 +121,7 @@ namespace MembershipService.Infrastructure.Integrations
                     SkuId = skuId,
                     Price = price,
                     Status = status,
-                    StockAvailable = stockAvailable
+                    IsStockAvailable = stockAvailable
                 };
             }
             catch (Exception ex)

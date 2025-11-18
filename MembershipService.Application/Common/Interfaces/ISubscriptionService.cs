@@ -4,6 +4,6 @@ namespace MembershipService.Application.Common.Interfaces
 {
     public interface ISubscriptionService
     {
-        Task<IEnumerable<SubscriptionDto>> GetAllAsync();
+        Task<IEnumerable<SubscriptionDto>> GetAllSubscriptionsAsync();
     }
 }

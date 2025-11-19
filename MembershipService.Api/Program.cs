@@ -1,13 +1,14 @@
 using AutoMapper;
+using MembershipService.Api.Mappings;
 using MembershipService.Application.Common.Interfaces;
+using MembershipService.Application.Common.Mappings;
 using MembershipService.Application.Mapping;
 using MembershipService.Application.Services;
+using MembershipService.Domain.Models;
+using MembershipService.Infrastructure.Extensions;
+using MembershipService.Infrastructure.Extensions.MembershipService.Infrastructure.Extensions;
 using MembershipService.Infrastructure.Integrations;
 using MembershipService.Infrastructure.Interfaces;
-using MembershipService.Application.Common.Mappings;
-using MembershipService.Infrastructure.Extensions;
-using MembershipService.Api.Mappings;
-using MembershipService.Infrastructure.Extensions.MembershipService.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.Configure<VtexApiSettings>(builder.Configuration.GetSection("VtexApi"));
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

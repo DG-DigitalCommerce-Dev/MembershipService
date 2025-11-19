@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Folder Include="BackgroundServices\" />
+    <Folder Include="Mapping\" />
   </ItemGroup>
 
 </Project>

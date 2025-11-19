@@ -2,7 +2,7 @@
 using MembershipService.Application.DTOs;
 using MembershipService.Api.Models;
 
-namespace MembershipService.Api.Mapping
+namespace MembershipService.Api.Mappings
 {
     public class DtoToResponseProfile :Profile
     {

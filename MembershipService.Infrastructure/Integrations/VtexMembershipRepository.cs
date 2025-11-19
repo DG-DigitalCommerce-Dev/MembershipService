@@ -26,10 +26,10 @@ namespace MembershipService.Infrastructure.Integrations
         }
         public async Task<VtexMembershipResponse> GetActiveMembershipData(int page)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["baseUrl"]}/api/rns/pub/subscriptions?status=ACTIVE&page={page}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["BaseUrl"]}/api/rns/pub/subscriptions?status=ACTIVE&page={page}");
             request.Headers.Add(VtexConstants.AcceptHeader, VtexConstants.AcceptHeaderValue); 
-            request.Headers.Add(VtexConstants.AppTokenHeader, _config["vtexAppToken"]);
-            request.Headers.Add(VtexConstants.ApiKeyHeader, _config["vtexApiKey"]);
+            request.Headers.Add(VtexConstants.AppTokenHeader, _config["AppToken"]);
+            request.Headers.Add(VtexConstants.AppKeyHeader, _config["AppKey"]);
 
             try
             {

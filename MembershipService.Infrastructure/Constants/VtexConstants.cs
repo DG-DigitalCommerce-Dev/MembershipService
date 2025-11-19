@@ -15,6 +15,6 @@ namespace MembershipService.Infrastructure.Constants
         public const string AcceptHeaderValue = "application/json";
         public const string ContentTypeJson = "application/json";
 
-        public static string ApiKeyHeader { get; internal set; }
+        //public static string ApiKeyHeader { get; internal set; }
     }
 }

@@ -6,7 +6,6 @@ using MembershipService.Infrastructure.Integrations;
 using MembershipService.Infrastructure.Interfaces;
 using MembershipService.Application.Common.Mappings;
 using MembershipService.Infrastructure.Extensions;
-using MembershipService.Api.Mapping;
 using MembershipService.Api.Mappings;
 using MembershipService.Infrastructure.Extensions.MembershipService.Infrastructure.Extensions;
 

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="MembershipService.Application.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
@@ -14,7 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MembershipService.Application\MembershipService.Application.csproj" />
-    <ProjectReference Include="..\MembershipService.Application\MembershipService.Application.csproj" />
+    <ProjectReference Include="..\MembershipService.Infrastructure\MembershipService.Infrastructure.csproj" />
+    <ProjectReference Include="..\MembershiService.Application\MembershipService.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

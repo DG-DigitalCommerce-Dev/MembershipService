@@ -1,4 +1,10 @@
-﻿namespace MembershipService.Infrastructure.Constants
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MembershipService.Infrastructure.Constants
 {
     public static class VtexConstants
     {
@@ -8,5 +14,7 @@
         public const string AcceptHeader = "Accept";
         public const string AcceptHeaderValue = "application/json";
         public const string ContentTypeJson = "application/json";
+
+        public static string ApiKeyHeader { get; internal set; }
     }
 }

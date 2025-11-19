@@ -10,4 +10,10 @@
     <ProjectReference Include="..\MembershipService.Domain\MembershipService.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Integrations\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

@@ -124,7 +124,7 @@ namespace MembershipService.Infrastructure.Integrations
                     IsStockAvailable = stockAvailable
                 };
             }
-            catch (Exception ex)
+            catch (Exception ex) 
             {
                 _logger.LogError(ex, LogMessages.SkuBuildError, skuId);
                 return null;
@@ -155,4 +155,4 @@ namespace MembershipService.Infrastructure.Integrations
 
     }
 }
-
+ 

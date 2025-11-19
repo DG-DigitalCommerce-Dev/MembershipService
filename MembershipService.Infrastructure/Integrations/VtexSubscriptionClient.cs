@@ -139,7 +139,6 @@ namespace MembershipService.Infrastructure.Integrations
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    await Task.Delay(200);
                     response = await _pricingClient.GetAsync($"prices/{skuId}");
                     if (!response.IsSuccessStatusCode) return null;
                 }

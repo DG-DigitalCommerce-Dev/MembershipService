@@ -38,9 +38,9 @@ namespace MembershipService.Infrastructure.Tests
         {
             _mockLogger = new Mock<ILogger<VtexMembershipRepository>>();
             _mockConfig = new Mock<IConfiguration>();
-            _mockConfig.SetupGet(c => c["baseUrl"]).Returns(FakeBaseUrl);
-            _mockConfig.SetupGet(c => c["vtexAppToken"]).Returns(FakeAppToken);
-            _mockConfig.SetupGet(c => c["vtexApiKey"]).Returns(FakeApiKey);
+            _mockConfig.SetupGet(c => c["VtexApi:BaseUrl"]).Returns(FakeBaseUrl);
+            _mockConfig.SetupGet(c => c["VtexApi:AppToken"]).Returns(FakeAppToken);
+            _mockConfig.SetupGet(c => c["VtexApi:ApiKey"]).Returns(FakeApiKey);
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             _httpClient = new HttpClient(_mockHttpMessageHandler.Object);
 

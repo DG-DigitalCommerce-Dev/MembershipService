@@ -18,6 +18,7 @@ namespace MembershipService.Infrastructure.Integrations
         private readonly ILogger<VtexMembershipRepository> _logger;
         private readonly IConfiguration _config;
 
+
         public VtexMembershipRepository(HttpClient httpClient, ILogger<VtexMembershipRepository> logger, IConfiguration config)
         {
             _httpClient = httpClient;
@@ -26,10 +27,10 @@ namespace MembershipService.Infrastructure.Integrations
         }
         public async Task<VtexMembershipResponse> GetActiveMembershipData(int page)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["BaseUrl"]}/api/rns/pub/subscriptions?status=ACTIVE&page={page}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_config["VtexApi:BaseUrl"]}/api/rns/pub/subscriptions?status=ACTIVE&page={page}");
             request.Headers.Add(VtexConstants.AcceptHeader, VtexConstants.AcceptHeaderValue); 
-            request.Headers.Add(VtexConstants.AppTokenHeader, _config["AppToken"]);
-            request.Headers.Add(VtexConstants.AppKeyHeader, _config["AppKey"]);
+            request.Headers.Add(VtexConstants.AppTokenHeader, _config["VtexApi:AppToken"]);
+            request.Headers.Add(VtexConstants.AppKeyHeader, _config["VtexApi:AppKey"]);
 
             try
             {

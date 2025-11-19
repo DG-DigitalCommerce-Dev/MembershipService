@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 namespace MembershipService.Api.Controllers
 {
     [ApiController]
-    [Route("/api/[controller]")]
+    [Route("/api/v1/[controller]")]
     public class MembershipController : Controller
     {
         private readonly IMembershipDataService _membershipDataService;

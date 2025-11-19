@@ -20,19 +20,14 @@ namespace MembershipService.Application.DTOs
     }
     public class MembershipDtoData
     {
-        [Required]
         public string Id { get; set; }
-        [Required]
         public string CustomerId { get; set; }
-        [Required]
         public string CustomerEmail { get; set; }
         public string Title { get; set; }
-        [Required]
         public string Status { get; set; }
         public bool IsSkipped { get; set; }
         public string NextPurchaseDate { get; set; }
         public string LastPurchaseDate { get; set; }
-        [Required]
         public PlanDto PlanDto { get; set; }
         public ShippingAddressDto ShippingAddressDto { get; set; }
         public PurchaseSettingsDto PurchaseSettingsDto { get; set; }

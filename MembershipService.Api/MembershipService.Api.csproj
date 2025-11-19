@@ -19,7 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MembershipService.Application\MembershipService.Application.csproj" />
     <ProjectReference Include="..\MembershipService.Infrastructure\MembershipService.Infrastructure.csproj" />
-    <ProjectReference Include="..\MembershiService.Application\MembershipService.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

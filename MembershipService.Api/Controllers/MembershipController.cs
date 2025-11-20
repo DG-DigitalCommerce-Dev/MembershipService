@@ -24,7 +24,7 @@ namespace MembershipService.Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("skus")] 
+        [HttpGet("subscriptions")] 
         public async Task<ActionResult<IEnumerable<MembershipResponseData>>> GetActiveMembership([FromQuery] int page)
         {
             _logger.LogInformation(LogMessageConstants.ProcessingMembershipInfoEndpoint);

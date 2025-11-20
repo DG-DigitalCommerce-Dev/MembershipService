@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MembershipService.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/subscription")]
+    [Route("api/v1/membership")]
     public class SubscriptionController : ControllerBase
     {
         private readonly ISubscriptionService _service;
@@ -21,7 +21,7 @@ namespace MembershipService.Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("plans")]
+        [HttpGet("skus")]
         public async Task<ActionResult<IEnumerable<SubscriptionResponse>>> GetPlans()
         {
             _logger.LogInformation(LogMessages.RequestReceived);

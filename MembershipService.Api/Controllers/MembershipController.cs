@@ -25,13 +25,15 @@ namespace MembershipService.Api.Controllers
         }
 
         [HttpGet("subscriptions")] 
-        public async Task<ActionResult<IEnumerable<MembershipResponseData>>> GetActiveMembership([FromQuery] int page)
+        public async Task<ActionResult<IEnumerable<MembershipResponseData>>> GetActiveMembership([FromQuery] int page, [FromQuery] string customerEmail)
         {
             _logger.LogInformation(LogMessageConstants.ProcessingMembershipInfoEndpoint);
             if (page < 1)
                 return BadRequest("Page value should be greater than 0");
+            if (customerEmail == "")
+                return BadRequest("No customer email was provided");
 
-            var result = await _membershipDataService.GetActiveMembershipData(page);
+            var result = await _membershipDataService.GetActiveMembershipData(page,customerEmail);
             if (result == null) 
                 return StatusCode(StatusCodes.Status500InternalServerError,"An unexpected error occurred");
 

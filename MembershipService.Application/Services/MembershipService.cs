@@ -25,10 +25,10 @@ namespace MembershipService.Application.Services
             _vtexMembershipRepository = vtexMembershipRepository;
             _mapper = mapper;
         }
-        public async Task<MembershipDto> GetActiveMembershipData(int page)
+        public async Task<MembershipDto> GetActiveMembershipData(int page, string customerEmail)
         {
             _logger.LogInformation(LogMessageConstants.RequestingMembershipData);
-            var result = await _vtexMembershipRepository.GetActiveMembershipData(page);
+            var result = await _vtexMembershipRepository.GetActiveMembershipData(page,customerEmail);
 
             if (result == null)
             {

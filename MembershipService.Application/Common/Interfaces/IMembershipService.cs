@@ -8,6 +8,6 @@ namespace MembershipService.Application.Common.Interfaces
 {
     public interface IMembershipDataService
     {
-        Task<MembershipDto> GetActiveMembershipData(int page);
+        Task<MembershipDto> GetActiveMembershipData(int page, string customerEmail);
     }
 }

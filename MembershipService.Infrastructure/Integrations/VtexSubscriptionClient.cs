@@ -1,10 +1,12 @@
-﻿using MembershipService.Domain.Models;
+﻿using MembershipService.Domain.Constants;
+using MembershipService.Domain.Models;
 using MembershipService.Infrastructure.Constants;
 using MembershipService.Infrastructure.Interfaces;
-using MembershipService.Domain.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 namespace MembershipService.Infrastructure.Integrations
 {
     public class VtexSubscriptionClient : IVtexSubscriptionClient
@@ -13,7 +15,7 @@ namespace MembershipService.Infrastructure.Integrations
         private readonly HttpClient _pricingClient;
         private readonly ILogger<VtexSubscriptionClient> _logger;
         private readonly VtexApiSettings _settings;
-        public VtexSubscriptionClient(HttpClient httpClient,IOptions<VtexApiSettings> options,ILogger<VtexSubscriptionClient> logger)
+        public VtexSubscriptionClient(HttpClient httpClient, IOptions<VtexApiSettings> options, ILogger<VtexSubscriptionClient> logger)
         {
             _settings = options.Value;
             _logger = logger;
@@ -24,6 +26,8 @@ namespace MembershipService.Infrastructure.Integrations
             _pricingClient.BaseAddress = new Uri($"{_settings.PricingBaseUrl.TrimEnd('/')}/");
             ApplyDefaultHeaders(_pricingClient);
         }
+
+
 
         private void ApplyDefaultHeaders(HttpClient client)
         {
@@ -59,7 +63,7 @@ namespace MembershipService.Infrastructure.Integrations
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.VtexFetchError);
-               return null;
+                return null;
             }
         }
 
@@ -124,7 +128,7 @@ namespace MembershipService.Infrastructure.Integrations
                     IsStockAvailable = stockAvailable
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.SkuBuildError, skuId);
                 return null;
@@ -153,6 +157,95 @@ namespace MembershipService.Infrastructure.Integrations
             }
         }
 
+        public async Task<Subscription?> GetSubscriptionAsync(string subscriptionId)
+        {
+            try
+            {
+                var response = await _catalogClient.GetAsync($"api/rns/pub/subscriptions/{subscriptionId}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(LogMessageConstants.VtexReturnedErrorForSubscription, response.StatusCode, subscriptionId);
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Subscription>(json);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessageConstants.ErrorFetchingSubscription, subscriptionId);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Cancels an active subscription.
+        /// </summary>
+        /// <param name="subscriptionId">The unique subscription identifier.</param>
+        /// <param name="customerEmail">The customer email to verify trial eligibility.</param>
+        /// <param name="request">The cancellation status request object.</param>
+        /// <returns>Standard cancellation response body.</returns>
+        public async Task<bool> CancelSubscriptionAsync(string subscriptionId)
+        {
+            try
+            {
+                var payload = new { status = "CANCELED" };
+
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _catalogClient.PatchAsync(
+                    $"api/rns/pub/subscriptions/{subscriptionId}",
+                    content
+                );
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError(LogMessageConstants.FailedToCancelSubscription, subscriptionId, response.StatusCode);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessageConstants.ErrorCancellingSubscription, subscriptionId);
+                return false;
+            }
+        }
+
+        public async Task<bool> HasUserUsedTrialAsync(string customerEmail)
+        {
+            try
+            {
+                var response = await _catalogClient.GetAsync(
+                    $"api/rns/pub/subscriptions?customerEmail={customerEmail}"
+                );
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(LogMessageConstants.SubscriptionListFetchFailed, customerEmail);
+                    return false; // assume not used
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                // [] → user never subscribed → trial NOT used
+                // [ {} ] → trial used
+                bool hasTrial = !json.Trim().Equals("[]");
+
+                return hasTrial;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, LogMessageConstants.ErrorFetchingTrialEligibility, customerEmail);
+                return false;
+            }
+        }
+
     }
 }
- 

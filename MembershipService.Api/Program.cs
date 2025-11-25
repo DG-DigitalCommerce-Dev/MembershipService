@@ -5,10 +5,7 @@ using MembershipService.Application.Common.Mappings;
 using MembershipService.Application.Mapping;
 using MembershipService.Application.Services;
 using MembershipService.Domain.Models;
-using MembershipService.Infrastructure.Extensions;
 using MembershipService.Infrastructure.Extensions.MembershipService.Infrastructure.Extensions;
-using MembershipService.Infrastructure.Integrations;
-using MembershipService.Infrastructure.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +17,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IMembershipDataService, MembershipDataService>();
-builder.Services.AddAutoMapper(typeof(DtoToResponseProfile),typeof(MembershipDataToDtoProfile));
+builder.Services.AddAutoMapper(typeof(DtoToResponseProfile), typeof(MembershipDataToDtoProfile));
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();

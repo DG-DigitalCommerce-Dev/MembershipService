@@ -7,9 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\Models\**" />
+    <EmbeddedResource Remove="Common\Models\**" />
+    <None Remove="Common\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Common\Models\CancelResponseModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Common\Enum\" />
     <Folder Include="Common\Exceptions\" />
-    <Folder Include="Common\Models\" />
     <Folder Include="Extensions\" />
   </ItemGroup>
 

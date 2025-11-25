@@ -16,5 +16,8 @@
         public const string ProductFetchError = "Failed to fetch product for RefId: {RefId}";
         public const string PriceFetchError = "Failed to fetch price for SKU: {SkuId}";
         public const string SkuBuildError = "Failed to build SKU: {SkuId}";
+
+        public const string SubscriptionsRetrievedSuccessfully = "Subscriptions retrieved successfully";
+        public const string SubscriptionCancelledSuccessfully = "Subscription {SubscriptionId} cancelled successfully";
     }
 }

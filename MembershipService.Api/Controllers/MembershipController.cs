@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 namespace MembershipService.Api.Controllers
 {
     [ApiController]
-    [Route("/api/v1/[controller]")]
+    [Route("/api/v1/membership")]
     public class MembershipController : Controller
     {
         private readonly IMembershipDataService _membershipDataService;
@@ -24,7 +24,7 @@ namespace MembershipService.Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("skus")] 
+        [HttpGet("plans")] 
         public async Task<ActionResult<IEnumerable<MembershipResponseData>>> GetActiveMembership([FromQuery] int page)
         {
             _logger.LogInformation(LogMessageConstants.ProcessingMembershipInfoEndpoint);

@@ -4,8 +4,13 @@ using MembershipService.Application.DTOs;
 using MembershipService.Domain.Constants;
 using MembershipService.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
+
 namespace MembershipService.Application.Services
 {
+    /// <summary>
+    /// Service responsible for fetching subscription data from VTEX 
+    /// and transforming it into DTOs for API consumption.
+    /// </summary>
     public class SubscriptionService : ISubscriptionService
     {
         private readonly IVtexSubscriptionClient _vtexClient;
@@ -17,6 +22,11 @@ namespace MembershipService.Application.Services
             _logger = logger;
             _mapper = mapper;
         }
+
+        /// <summary>
+        /// Retrieves all subscription plans and maps them into DTOs.
+        /// </summary>
+        /// <returns>A list of <see cref="SubscriptionDto"/> objects.</returns>
         public async Task<IEnumerable<SubscriptionDto>> GetAllSubscriptionsAsync()
         {
             _logger.LogInformation(LogMessages.FetchingFromVtex);

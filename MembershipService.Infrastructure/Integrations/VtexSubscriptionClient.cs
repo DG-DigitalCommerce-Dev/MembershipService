@@ -7,13 +7,23 @@ using Microsoft.Extensions.Options;
 using System.Text.Json;
 namespace MembershipService.Infrastructure.Integrations
 {
+    /// <summary>
+    /// Handles communication with the VTEX Catalog and Pricing services to build subscription plans.
+    /// </summary>
     public class VtexSubscriptionClient : IVtexSubscriptionClient
     {
         private readonly HttpClient _catalogClient;
         private readonly HttpClient _pricingClient;
         private readonly ILogger<VtexSubscriptionClient> _logger;
         private readonly VtexApiSettings _settings;
-        public VtexSubscriptionClient(HttpClient httpClient,IOptions<VtexApiSettings> options,ILogger<VtexSubscriptionClient> logger)
+
+        /// <summary>
+        /// Initializes the VTEX subscription client with required configurations.
+        /// </summary>
+        /// <param name="httpClient">Configured HttpClient for catalog calls.</param>
+        /// <param name="options">VTEX API settings such as URLs, AppKey, AppToken.</param>
+        /// <param name="logger">Logger used for error and info logging.</param>
+        public VtexSubscriptionClient(HttpClient httpClient, IOptions<VtexApiSettings> options, ILogger<VtexSubscriptionClient> logger)
         {
             _settings = options.Value;
             _logger = logger;
@@ -31,6 +41,10 @@ namespace MembershipService.Infrastructure.Integrations
             client.DefaultRequestHeaders.Add(VtexConstants.AppTokenHeader, _settings.AppToken);
             client.DefaultRequestHeaders.Add(VtexConstants.AcceptHeader, VtexConstants.AcceptHeaderValue);
         }
+        /// <summary>
+        /// Retrieves subscription plans by combining catalog and pricing information.
+        /// </summary>
+        /// <returns>A subscription object containing all plans and their SKU details.</returns>
         public async Task<Subscription?> GetSubscriptionPlansAsync()
         {
             try
@@ -38,13 +52,14 @@ namespace MembershipService.Infrastructure.Integrations
                 var planTasks = _settings.SubscriptionRefs.Select(async refItem =>
                 {
                     var productJson = await FetchProduct(refItem.RefId);
-                    if (productJson is null) return null;
+                    if (productJson is null) { return null; }
                     var skuIds = ExtractSkuIds(productJson.Value);
-                    if (skuIds.Count == 0) return null;
+                    if (skuIds.Count == 0) { return null; }
+
                     var skuTasks = skuIds.Select(skuId => BuildSku(skuId, productJson.Value));
                     var skuResults = await Task.WhenAll(skuTasks);
                     var validSkus = skuResults.Where(s => s != null).ToList();
-                    if (validSkus.Count == 0) return null;
+                    if (validSkus.Count == 0) { return null; }
                     return new SubscriptionPlan
                     {
                         PlanType = refItem.PlanType,
@@ -59,17 +74,20 @@ namespace MembershipService.Infrastructure.Integrations
             catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.VtexFetchError);
-               return null;
+                return null;
             }
         }
-
+        /// <summary>
+        /// Fetches product details for a given RefId from VTEX Catalog API.
+        /// </summary>
+        /// <param name="refId">Subscription product reference ID.</param>
         private async Task<JsonElement?> FetchProduct(string refId)
         {
             try
             {
                 var response = await _catalogClient.GetAsync(
                     $"api/catalog_system/pvt/products/productgetbyrefid/{refId}");
-                if (!response.IsSuccessStatusCode) return null;
+                if (!response.IsSuccessStatusCode) { return null; }
                 var json = await response.Content.ReadAsStringAsync();
                 return JsonDocument.Parse(json).RootElement;
             }
@@ -79,42 +97,43 @@ namespace MembershipService.Infrastructure.Integrations
                 return null;
             }
         }
-
+        /// <summary>
+        /// Extracts SKU IDs from the product JSON returned by VTEX Catalog.
+        /// </summary>
         private List<string> ExtractSkuIds(JsonElement product)
         {
             var skuIds = new List<string>();
-            if (product.TryGetProperty("items", out var items) &&
-                items.ValueKind == JsonValueKind.Array)
+            if (product.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
             {
                 foreach (var item in items.EnumerateArray())
                 {
                     if (item.TryGetProperty("Id", out var idProp))
+                    {
                         skuIds.Add(idProp.GetString() ?? string.Empty);
+                    }
                 }
             }
-            if (!skuIds.Any() &&
-                product.TryGetProperty("Id", out var fallbackId))
+            if (!skuIds.Any() && product.TryGetProperty("Id", out var fallbackId))
             {
                 skuIds.Add(fallbackId.GetInt32().ToString());
             }
             return skuIds;
         }
-
+        /// <summary>
+        /// Builds a SKU object by enriching it with pricing and stock information.
+        /// </summary>
         private async Task<Sku?> BuildSku(string skuId, JsonElement productJson)
         {
             try
             {
                 var priceJson = await FetchSkuPrice(skuId);
                 decimal? price = null;
-                if (priceJson is JsonElement priceElement &&
-                    priceElement.TryGetProperty("basePrice", out var basePriceProp) &&
+                if (priceJson is JsonElement priceElement && priceElement.TryGetProperty("basePrice", out var basePriceProp) &&
                     basePriceProp.ValueKind == JsonValueKind.Number)
                 {
                     price = basePriceProp.GetDecimal();
                 }
-                var stockAvailable =
-                    productJson.TryGetProperty("ShowWithoutStock", out var stockProp) &&
-                    stockProp.ValueKind == JsonValueKind.True;
+                var stockAvailable = productJson.TryGetProperty("ShowWithoutStock", out var stockProp) && stockProp.ValueKind == JsonValueKind.True;
                 var status = price.HasValue && price.Value > 0 ? "ACTIVE" : "INACTIVE";
                 return new Sku
                 {
@@ -124,13 +143,15 @@ namespace MembershipService.Infrastructure.Integrations
                     IsStockAvailable = stockAvailable
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError(ex, LogMessages.SkuBuildError, skuId);
                 return null;
             }
         }
-
+        /// <summary>
+        /// Fetches pricing details for a specific SKU from VTEX Pricing API.
+        /// </summary>
         private async Task<JsonElement?> FetchSkuPrice(string skuId)
         {
             try
@@ -140,7 +161,7 @@ namespace MembershipService.Infrastructure.Integrations
                 if (!response.IsSuccessStatusCode)
                 {
                     response = await _pricingClient.GetAsync($"prices/{skuId}");
-                    if (!response.IsSuccessStatusCode) return null;
+                    if (!response.IsSuccessStatusCode) { return null; }
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -155,4 +176,3 @@ namespace MembershipService.Infrastructure.Integrations
 
     }
 }
- 

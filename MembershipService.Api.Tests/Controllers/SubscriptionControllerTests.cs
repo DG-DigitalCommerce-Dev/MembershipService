@@ -8,9 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MembershipService.Api.Tests.Controllers
 {
@@ -27,18 +24,16 @@ namespace MembershipService.Api.Tests.Controllers
         {
             _serviceMock = new Mock<ISubscriptionService>();
             _loggerMock = new Mock<ILogger<SubscriptionController>>();
-
             var mapperConfig = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<SubscriptionProfile>();
             });
-
             _mapper = mapperConfig.CreateMapper();
             _controller = new SubscriptionController(_serviceMock.Object, _loggerMock.Object, _mapper);
         }
 
         [Test]
-        public async Task GetPlans_ShouldReturnOk_WithMappedData()
+        public async Task Getskus_ShouldReturnOk_WithMappedData()
         {
             var dtoList = new List<SubscriptionDto>
             {
@@ -54,15 +49,12 @@ namespace MembershipService.Api.Tests.Controllers
             };
 
             _serviceMock.Setup(s => s.GetAllSubscriptionsAsync()).ReturnsAsync(dtoList);
-
-            var actionResult = await _controller.GetPlans();
+            var actionResult = await _controller.Getskus();
             var ok = actionResult.Result as OkObjectResult;
-
             Assert.That(ok, Is.Not.Null);
 
             var responseList = ok.Value as IEnumerable<SubscriptionResponse>;
             Assert.That(responseList, Is.Not.Null);
-
             var list = new List<SubscriptionResponse>(responseList);
             Assert.That(list.Count, Is.EqualTo(1));
             Assert.That(list[0].PlanType, Is.EqualTo("MONTHLY"));
@@ -70,32 +62,26 @@ namespace MembershipService.Api.Tests.Controllers
         }
 
         [Test]
-        public async Task GetPlans_ShouldReturnNotFound_WhenEmpty()
+        public async Task Getskus_ShouldReturnNotFound_WhenEmpty()
         {
-            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync())
-                        .ReturnsAsync(new List<SubscriptionDto>());
-
-            var actionResult = await _controller.GetPlans();
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync()).ReturnsAsync(new List<SubscriptionDto>());
+            var actionResult = await _controller.Getskus();
             Assert.That(actionResult.Result, Is.TypeOf<NotFoundObjectResult>());
         }
 
         [Test]
-        public async Task GetPlans_ShouldReturnNotFound_WhenNull()
+        public async Task Getskus_ShouldReturnNotFound_WhenNull()
         {
-            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync())
-                        .ReturnsAsync((IEnumerable<SubscriptionDto>)null);
-
-            var actionResult = await _controller.GetPlans();
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync()).ReturnsAsync((IEnumerable<SubscriptionDto>)null);
+            var actionResult = await _controller.Getskus();
             Assert.That(actionResult.Result, Is.TypeOf<NotFoundObjectResult>());
         }
 
         [Test]
-        public void GetPlans_ShouldThrowException_WhenServiceFails()
+        public void Getskus_ShouldThrowException_WhenServiceFails()
         {
-            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync())
-                        .ThrowsAsync(new Exception("error"));
-
-            Assert.ThrowsAsync<Exception>(() => _controller.GetPlans());
+            _serviceMock.Setup(s => s.GetAllSubscriptionsAsync()).ThrowsAsync(new Exception("error"));
+            Assert.ThrowsAsync<Exception>(() => _controller.Getskus());
         }
     }
 }

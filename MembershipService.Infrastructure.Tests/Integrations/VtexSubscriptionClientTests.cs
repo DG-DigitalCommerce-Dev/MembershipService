@@ -13,7 +13,6 @@ public class VtexSubscriptionClientTests
     private Mock<ILogger<VtexSubscriptionClient>> _logger;
     private Mock<IOptions<VtexApiSettings>> _options;
     private VtexApiSettings _settings;
-
     private const string CatalogUrl = "https://catalog.test/";
     private const string PricingUrl = "https://pricing.test/";
     [SetUp]
@@ -43,7 +42,6 @@ public class VtexSubscriptionClientTests
     {
         var mockHandler = new MockHttpMessageHandler(handler);
         var catalogClient = new HttpClient(mockHandler) { BaseAddress = new Uri(CatalogUrl) };
-
         var client = new VtexSubscriptionClient(catalogClient, _options.Object, _logger.Object);
 
         typeof(VtexSubscriptionClient)
@@ -61,14 +59,19 @@ public class VtexSubscriptionClientTests
         {
             var url = req.RequestUri!.AbsoluteUri;
             if (url.Contains("productgetbyrefid"))
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(product) };
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK) 
+                { Content = new StringContent(product) };
+            }
             if (url.Contains("prices/100"))
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(price) };
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK) 
+                { Content = new StringContent(price) };
+            }
             return new HttpResponseMessage(HttpStatusCode.NotFound);
         });
         var result = await client.GetSubscriptionPlansAsync();
         var sku = result!.Subscriptions.First().Skus.First();
-
         Assert.That(sku.Price, Is.EqualTo(200));
     }
     [Test]
@@ -79,13 +82,13 @@ public class VtexSubscriptionClientTests
         var client = CreateClient(req =>
         {
             if (req.RequestUri!.AbsoluteUri.Contains("productgetbyrefid"))
+            {
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(product) };
-
+            }
             return new HttpResponseMessage(HttpStatusCode.NotFound);
         });
         var result = await client.GetSubscriptionPlansAsync();
         var sku = result!.Subscriptions.First().Skus.First();
-
         Assert.That(sku.Status, Is.EqualTo("INACTIVE"));
     }
     [Test]
